@@ -1,0 +1,33 @@
+<header class="navbar">
+	
+	<img src="assets/LOGO_NAVBAR_BLANCO.png" class="logo" routerLink="/" />
+
+	<nav class="nav-left" aria-label="Navegación principal">
+		<a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Cartelera</a>
+		<a routerLink="/proximamente" routerLinkActive="active">Próximamente</a>
+		<a routerLink="/candy" routerLinkActive="active">Candy</a>
+
+		@if (esEmpleado()) {
+			<a routerLink="/validacion-qr" routerLinkActive="active">Validar QR</a>
+		}
+
+		@if (esAdmin()) {
+			<a routerLink="/admin" routerLinkActive="active">Admin</a>
+		}
+	</nav>
+
+	<nav class="nav-right" aria-label="Cuenta">
+		@if (estaLogueado()) {
+			@if (esCliente()) {
+				<a routerLink="/perfil" routerLinkActive="active">Mi perfil</a>
+				<a routerLink="/fidelizacion/puntos" routerLinkActive="active">Mis puntos</a>
+			}
+
+			<span class="user-name">{{perfil()?.nombre }}</span>
+			<button type="button" (click)="cerrarSesion()">Cerrar sesión</button>
+		} @else {
+			<a routerLink="/auth/login">Ingresar</a>
+			<a class="signup" routerLink="/auth/registro">Crear cuenta</a>
+		}
+	</nav>
+</header>

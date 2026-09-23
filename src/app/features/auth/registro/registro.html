@@ -1,0 +1,42 @@
+<div class="register">
+  <h2>Register</h2>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </div>
+
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <label>
+      Nombre:
+      <input type="text" formControlName="nombre" />
+    </label>
+
+    <label>
+      Apellido:
+      <input type="text" formControlName="apellido" />
+    </label>
+
+    <label>
+      Fecha de nacimiento:
+      <input type="date" formControlName="fecha_nacimiento" />
+    </label>
+
+    <label>
+      Email:
+      <input type="email" formControlName="email" />
+    </label>
+
+    <label>
+      Password:
+      <input type="password" formControlName="password" />
+    </label>
+
+    <button type="submit">Registrarse</button>
+  </form>
+
+  <a routerLink="/auth/login">Iniciar sesión</a>
+</div>

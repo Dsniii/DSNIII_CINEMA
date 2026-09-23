@@ -1,0 +1,23 @@
+<div class="login-form">
+  <h2>Login</h2>
+
+  <div *ngIf="errorMessage" class="error-message" role="alert">
+    {{ errorMessage }}
+  </div>
+
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <label>
+      Email:
+      <input type="email" formControlName="email" />
+    </label>
+
+    <label>
+      Password:
+      <input type="password" formControlName="password" />
+    </label>
+
+    <button type="submit">Ingresar</button>
+  </form>
+
+  <a routerLink="/auth/registro">Registrarse</a>
+</div>
