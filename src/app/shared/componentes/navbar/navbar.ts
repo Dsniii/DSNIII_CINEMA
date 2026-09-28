@@ -15,12 +15,14 @@ export class Navbar {
   // Se asume que Auth expone esto sincronizado con supabase.auth.onAuthStateChange()
   protected perfil = this.auth.perfilActual;
 
+  protected rol = computed(() => {
+    return this.perfil()?.rol?.trim().toLowerCase() ?? '';
+  });
+
   protected estaLogueado = computed(() => this.perfil() !== null);
-  protected esCliente = computed(() => this.perfil()?.rol === 'cliente');
-  protected esEmpleado = computed(
-    () => this.perfil()?.rol === 'empleado' || this.perfil()?.rol === 'admin',
-  );
-  protected esAdmin = computed(() => this.perfil()?.rol === 'admin');
+  protected esCliente = computed(() => this.rol() === 'cliente');
+  protected esEmpleado = computed(() => this.rol() === 'empleado');
+  protected esAdmin = computed(() => this.rol() === 'admin');
 
   async cerrarSesion(): Promise<void> {
     await this.auth.logout();

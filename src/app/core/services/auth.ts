@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
 
 export interface PerfilActual {
@@ -14,10 +14,12 @@ export class Auth {
 
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
-    void this.cargarPerfil();
 
-    this.supabase.auth.onAuthStateChange(() => {
-      void this.cargarPerfil();
+    this.supabase.auth.onAuthStateChange((_event, session) => {
+      const user = session?.user ?? null;
+      queueMicrotask(() => {
+        void this.cargarPerfil(user);
+      });
     });
   }
 
@@ -52,26 +54,39 @@ export class Auth {
     return this.supabase.auth.getUser();
   }
 
-  private async cargarPerfil(): Promise<void> {
+  async sincronizarPerfil(): Promise<void> {
     const { data } = await this.supabase.auth.getUser();
+    await this.cargarPerfil(data.user);
+  }
 
-    if (!data.user) {
+  async getRole(): Promise<string | null> {
+    const { data, error } = await this.supabase.rpc('rol_actual');
+
+    if (error) {
+      console.error('No se pudo cargar el rol del perfil:', error.message);
+      return null;
+    }
+
+    const rol = String(data ?? '').trim().toLowerCase();
+    return ['cliente', 'empleado', 'admin'].includes(rol) ? rol : null;
+  }
+
+  private async cargarPerfil(user: User | null): Promise<void> {
+    if (!user) {
       this.perfilActual.set(null);
       return;
     }
 
-    const metadata = data.user.user_metadata;
-    const rol = String(
-      data.user.app_metadata['role'] ??
-        data.user.app_metadata['rol'] ??
-        metadata['role'] ??
-        metadata['rol'] ??
-        'cliente',
-    ).toLowerCase();
+    const rol = await this.getRole();
+    const metadata = user.user_metadata;
+
+    if (!rol) {
+      console.error('El usuario autenticado no tiene un rol válido en perfiles.');
+    }
 
     this.perfilActual.set({
-      nombre: String(metadata['nombre'] ?? metadata['full_name'] ?? data.user.email ?? 'Usuario'),
-      rol,
+      nombre: String(metadata['nombre'] ?? metadata['full_name'] ?? user.email ?? 'Usuario'),
+      rol: rol ?? '',
     });
   }
 }

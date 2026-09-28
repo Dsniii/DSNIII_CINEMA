@@ -46,6 +46,7 @@ export class Login {
         return;
       }
 
+      await this.auth.sincronizarPerfil();
       await this.router.navigate(['/']);
     } catch (error) {
       console.error('Error inesperado en login:', error);
