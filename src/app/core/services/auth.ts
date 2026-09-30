@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
-import { environment } from '../../../environments/environment';
+import { type SupabaseClient as SupabaseSdkClient, type User } from '@supabase/supabase-js';
+import { SupabaseClient as SupabaseClientService } from './supabase-client';
 
 export interface PerfilActual {
   nombre: string;
@@ -9,11 +9,11 @@ export interface PerfilActual {
 
 @Injectable({ providedIn: 'root' })
 export class Auth {
-  private readonly supabase: SupabaseClient;
+  private readonly supabase: SupabaseSdkClient;
   readonly perfilActual = signal<PerfilActual | null>(null);
 
-  constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
+  constructor(supabaseClient: SupabaseClientService) {
+    this.supabase = supabaseClient.client;
 
     this.supabase.auth.onAuthStateChange((_event, session) => {
       const user = session?.user ?? null;
