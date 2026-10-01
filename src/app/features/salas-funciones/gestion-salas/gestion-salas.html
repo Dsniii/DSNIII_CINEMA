@@ -1,1 +1,141 @@
-<p>gestion-salas works!</p>
+<main class="room-manager">
+  <header class="page-heading">
+    <h1>Gestión de salas</h1>
+  </header>
+
+  <div class="room-layout">
+    <aside class="room-sidebar" aria-label="Salas">
+      <h2>Salas</h2>
+      <nav class="room-list">
+        @if (cargandoSalas()) {
+          <p class="room-message" aria-live="polite">Cargando salas…</p>
+        }
+
+        @if (errorCarga(); as error) {
+          <div class="room-load-error" role="alert">
+            <p>{{ error }}</p>
+            <button class="text-button" type="button" (click)="cargarSalas()">Reintentar</button>
+          </div>
+        }
+
+        @for (sala of salas(); track sala.id) {
+          <button
+            class="room-option"
+            type="button"
+            [class.selected]="sala.id === salaSeleccionadaId()"
+            [attr.aria-pressed]="sala.id === salaSeleccionadaId()"
+            (click)="seleccionarSala(sala)"
+          >
+            {{ sala.nombre }}
+          </button>
+        } @empty {
+          @if (!cargandoSalas() && !errorCarga()) {
+            <p class="room-message">Todavía no hay salas creadas.</p>
+          }
+        }
+
+        <button
+          class="add-room"
+          type="button"
+          [disabled]="creandoSala() || cargandoSalas() || !!errorCarga()"
+          (click)="crearSala()"
+        >
+          {{ creandoSala() ? 'Creando sala…' : '+ Nueva sala' }}
+        </button>
+        @if (errorCreacion(); as error) {
+          <p class="creation-error" role="alert">{{ error }}</p>
+        }
+      </nav>
+    </aside>
+
+    @if (salaSeleccionada(); as sala) {
+      <section class="room-editor" aria-label="Configuración de sala">
+        <div class="room-actions">
+          <label class="visually-hidden" for="nombre-sala">Nombre de la sala</label>
+          <input
+            id="nombre-sala"
+            class="room-name"
+            type="text"
+            maxlength="40"
+            [ngModel]="nombreSala()"
+            (ngModelChange)="nombreSala.set($event)"
+            [ngModelOptions]="{ standalone: true }"
+            (keyup.enter)="guardarSala()"
+          />
+          <div class="action-buttons">
+            <button
+              class="delete-button"
+              type="button"
+              [disabled]="guardandoSala() || eliminandoSala()"
+              (click)="eliminarSala()"
+            >
+              {{ eliminandoSala() ? 'Eliminando…' : 'Eliminar' }}
+            </button>
+            <button
+              class="save-button"
+              type="button"
+              [disabled]="!puedeGuardar() || guardandoSala() || eliminandoSala()"
+              (click)="guardarSala()"
+            >
+              {{ guardandoSala() ? 'Guardando…' : 'Guardar' }}
+            </button>
+          </div>
+        </div>
+        @if (errorEdicion(); as error) {
+          <p class="operation-error" role="alert">{{ error }}</p>
+        }
+        @if (errorEliminacion(); as error) {
+          <p class="operation-error" role="alert">{{ error }}</p>
+        }
+
+        <section class="seat-map" aria-label="Distribución de butacas">
+          <div class="seat-map-scroll">
+            <div class="seat-map-content">
+              <div class="screen">Pantalla</div>
+              <div class="seat-rows">
+                @for (fila of mapaButacas(); track fila.numero) {
+                  <div class="seat-row" [class]="'seat-row ' + fila.tipo">
+                    <span class="row-label" [attr.aria-label]="'Fila ' + fila.letra">
+                      {{ fila.letra }}
+                    </span>
+                    <div class="seat-blocks" [attr.aria-label]="'Butacas de la fila ' + fila.letra">
+                      @for (bloque of fila.bloquesButacas; track $index) {
+                        <div class="seat-block">
+                          @for (numero of bloque; track numero) {
+                            <span
+                              class="seat"
+                              [attr.title]="'Fila ' + fila.letra + ', butaca ' + numero"
+                              >{{ numero }}</span
+                            >
+                          }
+                        </div>
+                      }
+                    </div>
+                    <span class="row-count">{{ fila.bloquesButacas.flat().length }} butacas</span>
+                  </div>
+                }
+              </div>
+              
+            </div>
+          </div>
+        </section>
+
+        <section class="showtimes" aria-labelledby="showtimes-title">
+          <h2 id="showtimes-title">Funciones de hoy en esta sala</h2>
+          @if (sala.horarios.length > 0) {
+            <div class="time-list">
+              @for (horario of sala.horarios; track horario) {
+                <span class="time-chip">{{ horario }}</span>
+              }
+            </div>
+          } @else {
+            <p class="no-showtimes">No hay funciones asignadas para hoy.</p>
+          }
+          <p class="schedule-note">
+            Los horarios se asignan solos y siempre dejan 30 min libres entre funciones
+          </p>
+        </section>
+      </section>
+    }
+  </div>
+</main>
