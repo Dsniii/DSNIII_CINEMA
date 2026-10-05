@@ -1,18 +1,19 @@
 import { inject } from '@angular/core';
 import { CanMatchFn, Router } from '@angular/router';
-import { Auth } from '../services/auth';
+import { Autenticacion } from '../services/auth';
 
 
+/** Permite el paso solo al rol admin; redirige al login o al inicio. */
 export const adminGuard: CanMatchFn = async () => {
-  const auth = inject(Auth);
-  const router = inject(Router);
+  const autenticacion = inject(Autenticacion);
+  const enrutador = inject(Router);
 
-  const { data } = await auth.getUser();
+  const { data } = await autenticacion.obtenerUsuario();
   if (!data.user) {
-    return router.createUrlTree(['/auth/login']);
+    return enrutador.createUrlTree(['/auth/login']);
   }
 
-  await auth.sincronizarPerfil();
-  const role = auth.perfilActual()?.rol;
-  return role === 'admin' ? true : router.createUrlTree(['/']);
+  await autenticacion.sincronizarPerfil();
+  const rol = autenticacion.perfilActual()?.rol;
+  return rol === 'admin' ? true : enrutador.createUrlTree(['/']);
 };

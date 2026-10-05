@@ -1,15 +1,15 @@
 import { TestBed } from '@angular/core/testing';
-import { Storage } from './storage';
+import { Almacenamiento } from './storage';
 
-describe('Storage', () => {
-  let service: Storage;
+describe('Almacenamiento', () => {
+  let servicio: Almacenamiento;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Storage);
+    servicio = TestBed.inject(Almacenamiento);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  it('debería crearse', () => {
+    expect(servicio).toBeTruthy();
   });
 });

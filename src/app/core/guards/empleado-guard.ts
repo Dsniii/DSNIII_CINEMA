@@ -1,17 +1,18 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { Auth } from '../services/auth';
+import { Autenticacion } from '../services/auth';
 
+/** Permite el paso solo al rol empleado; redirige al login o al inicio. */
 export const empleadoGuard: CanActivateFn = async () => {
-  const auth = inject(Auth);
-  const router = inject(Router);
+  const autenticacion = inject(Autenticacion);
+  const enrutador = inject(Router);
 
-  const { data } = await auth.getUser();
+  const { data } = await autenticacion.obtenerUsuario();
   if (!data.user) {
-    return router.createUrlTree(['/auth/login']);
+    return enrutador.createUrlTree(['/auth/login']);
   }
 
-  await auth.sincronizarPerfil();
-  const role = auth.perfilActual()?.rol;
-  return role === 'empleado' ? true : router.createUrlTree(['/']);
+  await autenticacion.sincronizarPerfil();
+  const rol = autenticacion.perfilActual()?.rol;
+  return rol === 'empleado' ? true : enrutador.createUrlTree(['/']);
 };

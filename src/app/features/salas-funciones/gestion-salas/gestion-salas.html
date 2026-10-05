@@ -121,19 +121,35 @@
         </section>
 
         <section class="showtimes" aria-labelledby="showtimes-title">
-          <h2 id="showtimes-title">Funciones de hoy en esta sala</h2>
-          @if (sala.horarios.length > 0) {
-            <div class="time-list">
-              @for (horario of sala.horarios; track horario) {
-                <span class="time-chip">{{ horario }}</span>
+          <h2 id="showtimes-title">Funciones programadas en esta sala</h2>
+          @if (errorPeliculas(); as error) {
+            <p class="schedule-error" role="alert">{{ error }}</p>
+          }
+          @if (errorFunciones(); as error) {
+            <p class="schedule-error" role="alert">{{ error }}</p>
+          } @else if (cargandoFunciones()) {
+            <p class="no-showtimes" aria-live="polite">Cargando funciones…</p>
+          } @else if (funcionesSala().length > 0) {
+            <div class="function-list">
+              @for (funcion of funcionesSala(); track funcion.id) {
+                <article class="function-card">
+                  <div>
+                    <h3>{{ nombrePelicula(funcion.pelicula_id) }}</h3>
+                    <p>{{ fechaFuncion(funcion.fecha) }}</p>
+                  </div>
+                  <p class="function-time">
+                    {{ funcion.hora_inicio.slice(0, 5) }}–{{ funcion.hora_fin.slice(0, 5) }}
+                  </p>
+                  <div class="function-details">
+                    <span>{{ funcion.formato }}</span>
+                    <span>{{ funcion.idioma }}</span>
+                  </div>
+                </article>
               }
             </div>
           } @else {
-            <p class="no-showtimes">No hay funciones asignadas para hoy.</p>
+            <p class="no-showtimes">No hay funciones programadas para esta sala.</p>
           }
-          <p class="schedule-note">
-            Los horarios se asignan solos y siempre dejan 30 min libres entre funciones
-          </p>
         </section>
       </section>
     }

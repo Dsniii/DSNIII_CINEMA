@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EscanerQr } from './escaner-qr';
 
 describe('EscanerQr', () => {
-  let component: EscanerQr;
+  let componente: EscanerQr;
   let fixture: ComponentFixture<EscanerQr>;
 
   beforeEach(async () => {
@@ -11,11 +11,11 @@ describe('EscanerQr', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(EscanerQr);
-    component = fixture.componentInstance;
+    componente = fixture.componentInstance;
     await fixture.whenStable();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(componente).toBeTruthy();
   });
 });

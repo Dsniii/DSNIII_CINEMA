@@ -1,1 +1,226 @@
-<p>admin-productos works!</p>
+<main class="candy-admin">
+	<header class="page-header">
+		<div>
+			<p class="eyebrow">Administración · Candy bar</p>
+			<h1>Productos</h1>
+		</div>
+		<button class="primary-button" type="button" (click)="nuevoProducto()">
+			<span aria-hidden="true">＋</span> Nuevo producto
+		</button>
+	</header>
+
+	@if (error(); as mensajeError) {
+		<p class="feedback error" role="alert">{{ mensajeError }}</p>
+	}
+	@if (mensaje(); as mensajeExito) {
+		<p class="feedback success" role="status">{{ mensajeExito }}</p>
+	}
+
+	<section class="catalog" aria-label="Catálogo de productos">
+		<aside class="categories" aria-label="Categorías de productos">
+			<div class="section-label-row">
+				<h2 class="section-label">Categorías</h2>
+				<span class="count">{{ categorias().length }}</span>
+			</div>
+
+			<button
+				class="category-button"
+				type="button"
+				[class.selected]="categoriaSeleccionada() === null"
+				(click)="seleccionarCategoria(null)"
+			>
+				<span>Todas</span>
+				<span class="category-count">{{ productos().length }}</span>
+			</button>
+
+			@for (categoria of categorias(); track categoria.id) {
+				<div class="category-row">
+					<button
+						class="category-button"
+						type="button"
+						[class.selected]="categoriaSeleccionada() === categoria.id"
+						(click)="seleccionarCategoria(categoria.id)"
+					>
+						<span>{{ categoria.nombre }}</span>
+						<span class="category-count">
+							{{ productos().filter(p => p.categoria_id === categoria.id).length }}
+						</span>
+					</button>
+					<button
+						class="icon-button category-delete"
+						type="button"
+						[attr.aria-label]="'Eliminar categoría ' + categoria.nombre"
+						title="Eliminar categoría"
+						(click)="eliminarCategoria(categoria)"
+					>
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+			} @empty {
+				<p class="empty-note">Todavía no hay categorías.</p>
+			}
+
+			<form class="category-create" (ngSubmit)="crearCategoria()">
+				<label class="visually-hidden" for="nueva-categoria">Nombre de categoría</label>
+				<input
+					id="nueva-categoria"
+					type="text"
+					maxlength="100"
+					placeholder="Nueva categoría"
+					[ngModel]="nuevaCategoriaNombre()"
+					(ngModelChange)="nuevaCategoriaNombre.set($event)"
+					[ngModelOptions]="{ standalone: true }"
+				/>
+				<button class="outline-button" type="submit" [disabled]="!nuevaCategoriaNombre().trim()">
+					<span aria-hidden="true">＋</span> Categoría
+				</button>
+			</form>
+		</aside>
+
+		<div class="product-area">
+			<label class="search-field">
+				<span class="search-icon" aria-hidden="true">⌕</span>
+				<span class="visually-hidden">Buscar producto</span>
+				<input
+					type="search"
+					placeholder="Buscar producto..."
+					[ngModel]="busqueda()"
+					(ngModelChange)="busqueda.set($event)"
+					[ngModelOptions]="{ standalone: true }"
+				/>
+			</label>
+
+			@if (cargando()) {
+				<p class="list-message" aria-live="polite">Cargando productos…</p>
+			} @else {
+				<div class="product-grid">
+					@for (producto of productosFiltrados(); track producto.id) {
+						<article class="product-card" [class.inactive]="!producto.activo">
+							<div class="product-image">
+								@if (producto.imagen_path) {
+									<img [src]="producto.imagen_path" [alt]="producto.nombre" />
+								} @else {
+									<span class="image-placeholder" aria-hidden="true">Imagen</span>
+								}
+								<span class="image-category">{{ nombreCategoria(producto.categoria_id) }}</span>
+							</div>
+							<div class="product-info">
+								<div class="product-copy">
+									<h3>{{ producto.nombre }}</h3>
+									<p>{{ nombreCategoria(producto.categoria_id) }} <span>·</span> {{ formatearPrecio(producto.precio) }}</p>
+								</div>
+								<div class="product-actions">
+									<label class="active-toggle">
+										<input
+											type="checkbox"
+											[checked]="producto.activo"
+											[attr.aria-label]="(producto.activo ? 'Desactivar ' : 'Activar ') + producto.nombre"
+											(change)="cambiarEstado(producto, $any($event.target).checked)"
+										/>
+										<span>{{ producto.activo ? 'Activo' : 'Inactivo' }}</span>
+									</label>
+									<div class="row-buttons">
+										<button class="text-button" type="button" (click)="editar(producto)">Editar</button>
+										<button
+											class="icon-button product-delete"
+											type="button"
+											[attr.aria-label]="'Eliminar producto ' + producto.nombre"
+											title="Eliminar producto"
+											(click)="eliminarProducto(producto)"
+										>
+											<span aria-hidden="true">×</span>
+										</button>
+									</div>
+								</div>
+							</div>
+						</article>
+					} @empty {
+						<div class="empty-products">
+							<span class="empty-mark" aria-hidden="true">◇</span>
+							<h3>{{ productos().length === 0 ? 'Todavía no hay productos' : 'Sin resultados' }}</h3>
+							<p>{{ productos().length === 0 ? 'Agregá el primer producto para empezar.' : 'Probá con otro nombre o categoría.' }}</p>
+						</div>
+					}
+				</div>
+			}
+		</div>
+	</section>
+
+	<section class="editor" aria-labelledby="editor-title">
+		<div class="editor-heading">
+			<div>
+				<p class="eyebrow">{{ idEnEdicion() ? 'Edición de catálogo' : 'Alta de catálogo' }}</p>
+				<h2 id="editor-title">{{ idEnEdicion() ? 'Editar producto' : 'Nuevo producto' }}</h2>
+			</div>
+			@if (idEnEdicion()) {
+				<button class="text-button" type="button" (click)="nuevoProducto()">Cancelar</button>
+			}
+		</div>
+
+		<form class="product-form" (ngSubmit)="guardar()">
+			<div class="image-preview">
+				@if (formulario.imagen_path.trim()) {
+					<img [src]="formulario.imagen_path" [alt]="formulario.nombre || 'Vista previa del producto'" />
+				} @else {
+					<span aria-hidden="true">Imagen</span>
+				}
+			</div>
+
+			<label class="field field-name">
+				<span>Nombre</span>
+				<input
+					name="nombre"
+					type="text"
+					maxlength="150"
+					required
+					placeholder="Ej. Pochoclo mediano"
+					[(ngModel)]="formulario.nombre"
+				/>
+			</label>
+
+			<label class="field field-category">
+				<span>Categoría</span>
+				<select name="categoria_id" required [(ngModel)]="formulario.categoria_id">
+					<option value="" disabled>Elegir categoría</option>
+					@for (categoria of categorias(); track categoria.id) {
+						<option [value]="categoria.id">{{ categoria.nombre }}</option>
+					}
+				</select>
+			</label>
+
+			<label class="field field-price">
+				<span>Precio (ARS)</span>
+				<input
+					name="precio"
+					type="number"
+					min="0"
+					step="0.01"
+					required
+					[(ngModel)]="formulario.precio"
+				/>
+			</label>
+
+			<label class="field field-image">
+				<span>Ruta o URL de imagen</span>
+				<input
+					name="imagen_path"
+					type="text"
+					maxlength="500"
+					placeholder="https://… o ruta pública"
+					[(ngModel)]="formulario.imagen_path"
+				/>
+			</label>
+
+			<label class="form-active">
+				<input name="activo" type="checkbox" [(ngModel)]="formulario.activo" />
+				<span>Producto activo</span>
+			</label>
+
+			<div class="form-submit">
+				<button class="primary-button" type="submit" [disabled]="guardando() || categorias().length === 0">
+					{{ guardando() ? 'Guardando…' : idEnEdicion() ? 'Guardar cambios' : 'Crear producto' }}
+				</button>
+			</div>
+		</form>
+	</section>
+</main>

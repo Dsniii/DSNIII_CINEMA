@@ -4,6 +4,7 @@ import { adminGuard } from './core/guards/admin-guard';
 import { empleadoGuard } from './core/guards/empleado-guard';
 import { edadMinimaGuard } from './core/guards/edad-minima-guard';
 
+/** Rutas principales de la aplicación, con carga diferida y guards por rol. */
 export const routes: Routes = [
   {
     path: 'auth',
@@ -16,13 +17,17 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./features/peliculas/listado-peliculas/listado-peliculas').then((m) => m.ListadoPeliculas),
+      import('./features/peliculas/listado-peliculas/listado-peliculas').then(
+        (m) => m.ListadoPeliculas,
+      ),
     title: 'Cartelera',
   },
   {
     path: 'pelicula/:id',
     loadComponent: () =>
-      import('./features/peliculas/detalle-pelicula/detalle-pelicula').then((m) => m.DetallePelicula),
+      import('./features/peliculas/detalle-pelicula/detalle-pelicula').then(
+        (m) => m.DetallePelicula,
+      ),
     title: 'Detalle de película',
   },
   {
@@ -34,7 +39,9 @@ export const routes: Routes = [
   {
     path: 'candy',
     loadComponent: () =>
-      import('./features/candy/listado-productos/listado-productos').then((m) => m.ListadoProductos),
+      import('./features/candy/listado-productos/listado-productos').then(
+        (m) => m.ListadoProductos,
+      ),
     title: 'Candy bar',
   },
 
@@ -48,19 +55,23 @@ export const routes: Routes = [
   {
     path: 'compra/:funcionId/butacas',
     loadComponent: () =>
-      import('./features/compra/seleccion-butacas/seleccion-butacas').then((m) => m.SeleccionButacas),
+      import('./features/compra/seleccion-butacas/seleccion-butacas').then(
+        (m) => m.SeleccionButacas,
+      ),
     canActivate: [edadMinimaGuard],
     title: 'Elegir butacas',
   },
   {
     path: 'compra/:funcionId/checkout',
-    loadComponent: () => import('./features/compra/checkout/checkout').then((m) => m.Checkout),
+    loadComponent: () => import('./features/compra/checkout/checkout').then((m) => m.Pago),
     title: 'Finalizar compra',
   },
   {
     path: 'compra/confirmacion/:compraId',
     loadComponent: () =>
-      import('./features/compra/confirmacion-entrada/confirmacion-entrada').then((m) => m.ConfirmacionEntrada),
+      import('./features/compra/confirmacion-entrada/confirmacion-entrada').then(
+        (m) => m.ConfirmacionEntrada,
+      ),
     title: 'Tu entrada',
   },
 
@@ -75,7 +86,9 @@ export const routes: Routes = [
       {
         path: 'mis-peliculas',
         loadComponent: () =>
-          import('./features/perfil-usuario/mis-peliculas/mis-peliculas').then((m) => m.MisPeliculas),
+          import('./features/perfil-usuario/mis-peliculas/mis-peliculas').then(
+            (m) => m.MisPeliculas,
+          ),
       },
       {
         path: 'credito',
@@ -85,7 +98,9 @@ export const routes: Routes = [
       {
         path: 'datos',
         loadComponent: () =>
-          import('./features/perfil-usuario/datos-personales/datos-personales').then((m) => m.DatosPersonales),
+          import('./features/perfil-usuario/datos-personales/datos-personales').then(
+            (m) => m.DatosPersonales,
+          ),
       },
     ],
   },
@@ -122,12 +137,15 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./features/validacion-qr/escaner-qr/escaner-qr').then((m) => m.EscanerQr),
+        loadComponent: () =>
+          import('./features/validacion-qr/escaner-qr/escaner-qr').then((m) => m.EscanerQr),
       },
       {
         path: 'manual',
         loadComponent: () =>
-          import('./features/validacion-qr/ingreso-manual/ingreso-manual').then((m) => m.IngresoManual),
+          import('./features/validacion-qr/ingreso-manual/ingreso-manual').then(
+            (m) => m.IngresoManual,
+          ),
       },
     ],
   },
@@ -143,7 +161,8 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
         path: 'dashboard',
-        loadComponent: () => import('./features/admin/dashboard/dashboard').then((m) => m.Dashboard),
+        loadComponent: () =>
+          import('./features/admin/dashboard/dashboard').then((m) => m.Tablero),
       },
       {
         path: 'reportes',
@@ -157,7 +176,16 @@ export const routes: Routes = [
       {
         path: 'salas',
         loadComponent: () =>
-          import('./features/salas-funciones/gestion-salas/gestion-salas').then((m) => m.GestionSalas),
+          import('./features/salas-funciones/gestion-salas/gestion-salas').then(
+            (m) => m.GestionSalas,
+          ),
+      },
+      {
+        path: 'peliculas',
+        loadComponent: () =>
+          import('./features/peliculas/admin-peliculas/admin-peliculas').then(
+            (m) => m.AdminPeliculas,
+          ),
       },
       {
         path: 'funciones',
@@ -169,7 +197,9 @@ export const routes: Routes = [
       {
         path: 'cupones',
         loadComponent: () =>
-          import('./features/cupones-fidelizacion/admin-cupones/admin-cupones').then((m) => m.AdminCupones),
+          import('./features/cupones-fidelizacion/admin-cupones/admin-cupones').then(
+            (m) => m.AdminCupones,
+          ),
       },
       {
         path: 'candy',

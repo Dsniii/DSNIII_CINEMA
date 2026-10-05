@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+/** Pantalla mostrada cuando la ruta no existe. */
 @Component({
   selector: 'app-pagina-no-encontrada',
   standalone: true,

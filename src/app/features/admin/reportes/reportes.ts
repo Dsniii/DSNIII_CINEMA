@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+/** Pantalla de administración con los reportes. */
 @Component({
   imports: [],
   selector: 'app-reportes',

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+/** Pantalla para canjear puntos por recompensas. */
 @Component({
   imports: [],
   selector: 'app-canje-recompensas',

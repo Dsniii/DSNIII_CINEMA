@@ -1,1 +1,338 @@
-<p>gestion-funciones works!</p>
+<main class="functions-admin">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administración · Programación</p>
+      <h1>Gestión de funciones</h1>
+      <p class="page-description">
+        Asignación automática o selección manual con control de disponibilidad.
+      </p>
+    </div>
+    <button class="primary-button" type="button" (click)="nuevaFuncion()">+ Nueva función</button>
+  </header>
+
+  @if (error(); as mensajeError) {
+    <p class="feedback error" role="alert">{{ mensajeError }}</p>
+  }
+  @if (mensaje(); as mensajeExito) {
+    <p class="feedback success" role="status">{{ mensajeExito }}</p>
+  }
+
+  <div class="functions-layout">
+    <section class="schedule-section" aria-label="Funciones programadas">
+      <div class="filters">
+        <label class="filter-field">
+          <span class="visually-hidden">Filtrar por película</span>
+          <select
+            [ngModel]="filtroPelicula()"
+            (ngModelChange)="filtroPelicula.set($event)"
+            [ngModelOptions]="{ standalone: true }"
+          >
+            <option value="">Todas las películas</option>
+            @for (pelicula of peliculas(); track pelicula.id) {
+              <option [value]="pelicula.id">{{ pelicula.nombre }}</option>
+            }
+          </select>
+        </label>
+        <label class="filter-field date-filter">
+          <span class="visually-hidden">Filtrar por fecha</span>
+          <input
+            type="date"
+            [ngModel]="filtroFecha()"
+            (ngModelChange)="filtroFecha.set($event)"
+            [ngModelOptions]="{ standalone: true }"
+          />
+        </label>
+      </div>
+
+      @if (cargando()) {
+        <p class="list-message" aria-live="polite">Cargando funciones…</p>
+      } @else {
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Película</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Horario</th>
+                <th scope="col">Sala</th>
+                <th scope="col">Formato</th>
+                <th scope="col">Idioma</th>
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (funcion of funcionesFiltradas(); track funcion.id) {
+                <tr>
+                  <th scope="row">{{ nombrePelicula(funcion.pelicula_id) }}</th>
+                  <td>{{ funcion.fecha | date: 'dd/MM/yyyy' }}</td>
+                  <td>{{ funcion.hora_inicio.slice(0, 5) }}–{{ funcion.hora_fin.slice(0, 5) }}</td>
+                  <td>{{ nombreSala(funcion.sala_id) }}</td>
+                  <td>{{ funcion.formato }}</td>
+                  <td>{{ funcion.idioma }}</td>
+                  <td class="row-actions">
+                    <button class="text-button" type="button" (click)="editar(funcion)">
+                      Editar
+                    </button>
+                    <button
+                      class="danger-button"
+                      type="button"
+                      [disabled]="eliminandoId() === funcion.id"
+                      (click)="eliminar(funcion)"
+                    >
+                      {{ eliminandoId() === funcion.id ? 'Eliminando…' : 'Eliminar' }}
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td class="empty-state" colspan="7">
+                    {{
+                      funciones().length
+                        ? 'No hay funciones para esos filtros.'
+                        : 'Todavía no hay funciones.'
+                    }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <section class="editor" aria-labelledby="editor-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">{{ idEnEdicion() ? 'Edición' : 'Programación' }}</p>
+          <h2 id="editor-title">{{ idEnEdicion() ? 'Editar función' : 'Nueva función' }}</h2>
+        </div>
+        @if (idEnEdicion()) {
+          <button class="text-button" type="button" (click)="nuevaFuncion()">Cancelar</button>
+        }
+      </div>
+
+      <form #formFuncion="ngForm" (ngSubmit)="guardar()">
+        <label class="field">
+          <span>Película</span>
+          <select
+            name="pelicula_id"
+            [ngModel]="formulario.pelicula_id"
+            (ngModelChange)="seleccionarPelicula($event)"
+            required
+          >
+            <option value="" disabled>Seleccionar película</option>
+            @for (pelicula of peliculasDisponibles(); track pelicula.id) {
+              <option [value]="pelicula.id">
+                {{ pelicula.nombre }} — {{ pelicula.duracion_minutos }} min
+              </option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Sala</span>
+          <select name="sala_id" [(ngModel)]="formulario.sala_id">
+            <option value="">Automática (cualquier sala disponible)</option>
+            @for (sala of salas(); track sala.id) {
+              <option [value]="sala.id">{{ sala.nombre }}</option>
+            }
+          </select>
+        </label>
+
+        <fieldset class="choice-field schedule-mode">
+          <legend>Repetición</legend>
+          <div class="choice-group">
+            <label class="choice-button" [class.selected]="tipoProgramacion() === 'unica'">
+              <input
+                type="radio"
+                name="tipo_programacion"
+                [checked]="tipoProgramacion() === 'unica'"
+                [disabled]="!!idEnEdicion()"
+                (change)="tipoProgramacion.set('unica')"
+              />
+              <span>Función única</span>
+            </label>
+            <label class="choice-button" [class.selected]="tipoProgramacion() === 'recurrente'">
+              <input
+                type="radio"
+                name="tipo_programacion"
+                [checked]="tipoProgramacion() === 'recurrente'"
+                [disabled]="!!idEnEdicion()"
+                (change)="tipoProgramacion.set('recurrente')"
+              />
+              <span>Función recurrente</span>
+            </label>
+          </div>
+        </fieldset>
+
+        @if (tipoProgramacion() === 'recurrente' && !idEnEdicion()) {
+          <div class="recurrence-panel">
+            <fieldset class="choice-field weekday-field">
+              <legend>Días de la semana</legend>
+              <div class="weekday-options">
+                @for (dia of diasSemana; track dia.indice) {
+                  <label
+                    class="weekday-option"
+                    [class.selected]="diasSeleccionados().includes(dia.indice)"
+                  >
+                    <input
+                      type="checkbox"
+                      [checked]="diasSeleccionados().includes(dia.indice)"
+                      (change)="alternarDiaSemana(dia.indice, $any($event.target).checked)"
+                    />
+                    <span>{{ dia.etiqueta }}</span>
+                  </label>
+                }
+              </div>
+            </fieldset>
+            <div class="date-range">
+              <label class="field">
+                <span>Desde</span>
+                <input
+                  name="fecha_inicio_recurrente"
+                  type="date"
+                  [(ngModel)]="formulario.fecha"
+                  required
+                />
+              </label>
+              <label class="field">
+                <span>Hasta</span>
+                <input
+                  name="fecha_fin_recurrente"
+                  type="date"
+                  [ngModel]="fechaHasta()"
+                  (ngModelChange)="fechaHasta.set($event)"
+                  [ngModelOptions]="{ standalone: true }"
+                  required
+                />
+              </label>
+            </div>
+          </div>
+        } @else {
+          <label class="field">
+            <span>Fecha</span>
+            <input name="fecha" type="date" [(ngModel)]="formulario.fecha" required />
+          </label>
+        }
+
+        <div class="field">
+          <span>Horario de inicio</span>
+          <div class="time-choices">
+            @for (horario of horariosSugeridos; track horario) {
+              <button
+                class="choice-button time-choice"
+                type="button"
+                [class.selected]="formulario.hora_inicio === horario"
+                (click)="seleccionarHorario(horario)"
+              >
+                {{ horario }}
+              </button>
+            }
+          </div>
+          <input name="hora_inicio" type="time" [(ngModel)]="formulario.hora_inicio" required />
+          <p class="end-preview">
+            Fin calculado por duración: <strong>{{ vistaPreviaHoraFin() }}</strong>
+          </p>
+        </div>
+
+        <fieldset class="choice-field">
+          <legend>Formato</legend>
+          <div class="choice-group">
+            @for (formato of ['2D', '3D', '4D', '5D']; track formato) {
+              <button
+                class="choice-button"
+                type="button"
+                [class.selected]="formulario.formato === formato"
+                (click)="$any(formulario).formato = formato"
+              >
+                {{ formato }}
+              </button>
+            }
+          </div>
+        </fieldset>
+
+        <fieldset class="choice-field">
+          <legend>Idioma</legend>
+          <div class="choice-group">
+            @for (idioma of idiomas; track idioma.valor) {
+              <button
+                class="choice-button"
+                type="button"
+                [class.selected]="formulario.idioma === idioma.valor"
+                (click)="$any(formulario).idioma = idioma.valor"
+              >
+                {{ idioma.etiqueta }}
+              </button>
+            }
+          </div>
+        </fieldset>
+
+        <div class="availability" aria-live="polite">
+          <span class="availability-dot" aria-hidden="true"></span>
+          <span>La sala se asignará automáticamente al guardar.</span>
+        </div>
+
+        <div class="price-grid">
+          <label class="field">
+            <span>Precio base</span>
+            <input
+              name="precio_base"
+              type="number"
+              min="0"
+              step="1"
+              [(ngModel)]="formulario.precio_base"
+              required
+            />
+          </label>
+          <label class="field">
+            <span>Precio VIP</span>
+            <input
+              name="precio_vip"
+              type="number"
+              min="0"
+              step="1"
+              [(ngModel)]="formulario.precio_vip"
+              required
+            />
+          </label>
+        </div>
+
+        <div class="presale-panel">
+          <label class="presale-status">
+            <input type="checkbox" [checked]="preventaAbierta()" disabled />
+            <span>{{ preventaAbierta() ? 'Preventa activa' : 'Preventa cerrada' }}</span>
+          </label>
+          @if (peliculaSeleccionada(); as pelicula) {
+            <p>
+              @if (pelicula.dias_preventa > 0) {
+                Apertura: {{ fechaInicioPreventa() | date: 'dd/MM/yyyy' }} ·
+                {{ pelicula.dias_preventa }} días antes del estreno
+              } @else {
+                Esta película no tiene días de preventa configurados.
+              }
+            </p>
+          }
+          <label class="field">
+            <span>Precio de preventa</span>
+            <input
+              name="precio_preventa"
+              type="number"
+              min="0"
+              step="1"
+              [(ngModel)]="formulario.precio_preventa"
+              required
+            />
+          </label>
+        </div>
+
+        <button
+          class="primary-button submit-button"
+          type="submit"
+          [disabled]="formFuncion.invalid || guardando()"
+        >
+          {{ guardando() ? 'Guardando…' : idEnEdicion() ? 'Guardar cambios' : 'Crear función' }}
+        </button>
+      </form>
+    </section>
+  </div>
+</main>

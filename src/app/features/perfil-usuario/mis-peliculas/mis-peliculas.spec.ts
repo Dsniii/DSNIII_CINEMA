@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MisPeliculas } from './mis-peliculas';
 
 describe('MisPeliculas', () => {
-  let component: MisPeliculas;
+  let componente: MisPeliculas;
   let fixture: ComponentFixture<MisPeliculas>;
 
   beforeEach(async () => {
@@ -11,11 +11,11 @@ describe('MisPeliculas', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(MisPeliculas);
-    component = fixture.componentInstance;
+    componente = fixture.componentInstance;
     await fixture.whenStable();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(componente).toBeTruthy();
   });
 });

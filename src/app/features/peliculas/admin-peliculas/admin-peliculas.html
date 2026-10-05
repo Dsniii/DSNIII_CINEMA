@@ -1,0 +1,261 @@
+<main class="movies-admin">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administración · Cartelera</p>
+      <h1>Películas</h1>
+      <p class="page-description">Alta, edición y estado de las películas del cine.</p>
+    </div>
+    <button class="new-button" type="button" (click)="nuevaPelicula()">+ Nueva película</button>
+  </header>
+
+  @if (error(); as mensajeError) {
+    <p class="feedback error" role="alert">{{ mensajeError }}</p>
+  }
+  @if (mensaje(); as mensajeExito) {
+    <p class="feedback success" role="status">{{ mensajeExito }}</p>
+  }
+
+  <section class="editor" aria-labelledby="editor-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">{{ idEnEdicion() === null ? 'Nueva ficha' : 'Edición' }}</p>
+        <h2 id="editor-title">
+          {{ idEnEdicion() === null ? 'Datos de la película' : 'Editar película' }}
+        </h2>
+      </div>
+      @if (idEnEdicion() !== null) {
+        <button class="text-button" type="button" (click)="nuevaPelicula()">Cancelar</button>
+      }
+    </div>
+
+    <form #formPelicula="ngForm" (ngSubmit)="guardar()">
+      <div class="form-grid">
+        <label class="field field-name">
+          <span>Nombre</span>
+          <input
+            name="nombre"
+            type="text"
+            maxlength="200"
+            [(ngModel)]="formulario.nombre"
+            required
+          />
+        </label>
+
+        <label class="field field-synopsis">
+          <span>Sinopsis</span>
+          <textarea name="sinopsis" rows="3" [(ngModel)]="formulario.sinopsis"></textarea>
+        </label>
+
+        <label class="field field-image">
+          <span>Ruta de imagen</span>
+          <input
+            name="imagen_path"
+            type="text"
+            maxlength="500"
+            placeholder="https://… o ruta del storage"
+            [(ngModel)]="formulario.imagen_path"
+          />
+        </label>
+
+        <label class="field">
+          <span>Duración (minutos)</span>
+          <input
+            name="duracion_minutos"
+            type="number"
+            min="1"
+            step="1"
+            [(ngModel)]="formulario.duracion_minutos"
+            required
+          />
+        </label>
+
+        <label class="field">
+          <span>Restricción de edad</span>
+          <input
+            name="restriccion_edad"
+            type="number"
+            min="0"
+            step="1"
+            [(ngModel)]="formulario.restriccion_edad"
+            required
+          />
+        </label>
+
+        <label class="field">
+          <span>Fecha de estreno</span>
+          <input name="fecha_estreno" type="date" [(ngModel)]="formulario.fecha_estreno" required />
+        </label>
+
+        <label class="field">
+          <span>Días de preventa</span>
+          <input
+            name="dias_preventa"
+            type="number"
+            min="0"
+            step="1"
+            [(ngModel)]="formulario.dias_preventa"
+            required
+          />
+        </label>
+
+        <label class="active-toggle">
+          <input name="activa" type="checkbox" [(ngModel)]="formulario.activa" />
+          <span>Película activa</span>
+        </label>
+
+        <fieldset class="genre-field">
+          <legend>Géneros</legend>
+          @if (generos().length === 0) {
+            <p class="genre-empty">No hay géneros predefinidos para asignar.</p>
+          } @else {
+            <div class="genre-options">
+              @for (genero of generos(); track genero.id) {
+                <label
+                  class="genre-option"
+                  [class.selected]="formulario.generoIds.includes(genero.id)"
+                >
+                  <input
+                    type="checkbox"
+                    [checked]="formulario.generoIds.includes(genero.id)"
+                    (change)="alternarGenero(genero.id, $any($event.target).checked)"
+                  />
+                  <span>{{ genero.nombre }}</span>
+                </label>
+              }
+            </div>
+          }
+        </fieldset>
+      </div>
+
+      <div class="form-actions">
+        <button class="save-button" type="submit" [disabled]="formPelicula.invalid || guardando()">
+          {{
+            guardando()
+              ? 'Guardando…'
+              : idEnEdicion() === null
+                ? 'Crear película'
+                : 'Guardar cambios'
+          }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="list-section" aria-labelledby="list-title">
+    <div class="section-heading list-heading">
+      <div>
+        <p class="eyebrow">Registros</p>
+        <h2 id="list-title">
+          Listado de películas <span class="count">{{ peliculas().length }}</span>
+        </h2>
+      </div>
+      <div class="list-tools">
+        <label class="search-field">
+          <span class="visually-hidden">Buscar película por nombre</span>
+          <input
+            type="search"
+            placeholder="Buscar película"
+            [ngModel]="busqueda()"
+            (ngModelChange)="busqueda.set($event)"
+            [ngModelOptions]="{ standalone: true }"
+          />
+        </label>
+        <label class="filter-field">
+          <span class="visually-hidden">Filtrar películas</span>
+          <select
+            [ngModel]="filtro()"
+            (ngModelChange)="filtro.set($event)"
+            [ngModelOptions]="{ standalone: true }"
+          >
+            <option value="todas">Todas</option>
+            <option value="activas">Activas</option>
+            <option value="inactivas">Inactivas</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    @if (cargando()) {
+      <p class="list-message" aria-live="polite">Cargando películas…</p>
+    } @else {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Película</th>
+              <th scope="col">Duración</th>
+              <th scope="col">Edad</th>
+              <th scope="col">Estreno</th>
+              <th scope="col">Preventa</th>
+              <th scope="col">Géneros</th>
+              <th scope="col">Estado</th>
+              <th scope="col"><span class="visually-hidden">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (pelicula of peliculasFiltradas(); track pelicula.id) {
+              <tr>
+                <th scope="row">
+                  <div class="movie-name">
+                    @if (pelicula.imagen_path) {
+                      <img [src]="pelicula.imagen_path" [alt]="'Póster de ' + pelicula.nombre" />
+                    }
+                    <span>{{ pelicula.nombre }}</span>
+                  </div>
+                </th>
+                <td>{{ pelicula.duracion_minutos }} min</td>
+                <td>{{ pelicula.restriccion_edad }}+</td>
+                <td>{{ pelicula.fecha_estreno | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ pelicula.dias_preventa }} días</td>
+                <td>
+                  <div class="genre-list">
+                    @for (genero of pelicula.generos; track genero.id) {
+                      <span class="genre-badge">{{ genero.nombre }}</span>
+                    } @empty {
+                      <span class="no-genres">Sin géneros</span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <span class="status" [class.status-inactive]="!pelicula.activa">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    {{ pelicula.activa ? 'Activa' : 'Inactiva' }}
+                  </span>
+                </td>
+                <td class="row-actions">
+                  <button class="text-button" type="button" (click)="editar(pelicula)">
+                    Editar
+                  </button>
+                  <button
+                    class="text-button"
+                    type="button"
+                    [disabled]="idCambiandoEstado() === pelicula.id"
+                    (click)="cambiarEstado(pelicula)"
+                  >
+                    {{
+                      idCambiandoEstado() === pelicula.id
+                        ? 'Actualizando…'
+                        : pelicula.activa
+                          ? 'Dar de baja'
+                          : 'Reactivar'
+                    }}
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td class="empty-state" colspan="8">
+                  {{
+                    peliculas().length === 0
+                      ? 'Todavía no hay películas.'
+                      : 'No hay resultados para ese filtro.'
+                  }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</main>

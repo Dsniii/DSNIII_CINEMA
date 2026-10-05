@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+/** Pantalla de administración con el registro de actividad. */
 @Component({
   imports: [],
   selector: 'app-log-actividad',

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+/** Pantalla para validar entradas ingresando el código a mano. */
 @Component({
   imports: [],
   selector: 'app-ingreso-manual',

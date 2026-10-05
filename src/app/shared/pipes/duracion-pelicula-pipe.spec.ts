@@ -1,7 +1,7 @@
 import { DuracionPeliculaPipe } from './duracion-pelicula-pipe';
 
 describe('DuracionPeliculaPipe', () => {
-  it('create an instance', () => {
+  it('crea una instancia', () => {
     const pipe = new DuracionPeliculaPipe();
     expect(pipe).toBeTruthy();
   });

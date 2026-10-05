@@ -1,3 +1,9 @@
+:host {
+	display: block;
+	width: 100%;
+	flex-shrink: 0;
+}
+
 .logo {
  	width: 130px;
  	height: 50px;
@@ -8,11 +14,13 @@
 .navbar {
 	align-items: center;
 	background: #000000;
+	box-sizing: border-box;
 	color: #ffffff;
 	display: flex;
 	gap: 24px;
 	justify-content: space-between;
 	padding: 14px 24px;
+	width: 100%;
 }
 
 .brand,

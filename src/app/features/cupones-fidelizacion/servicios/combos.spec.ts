@@ -2,14 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { Combos } from './combos';
 
 describe('Combos', () => {
-  let service: Combos;
+  let servicio: Combos;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Combos);
+    servicio = TestBed.inject(Combos);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  it('debería crearse', () => {
+    expect(servicio).toBeTruthy();
   });
 });

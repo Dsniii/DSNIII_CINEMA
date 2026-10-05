@@ -2,14 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { Notificaciones } from './notificaciones';
 
 describe('Notificaciones', () => {
-  let service: Notificaciones;
+  let servicio: Notificaciones;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Notificaciones);
+    servicio = TestBed.inject(Notificaciones);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  it('debería crearse', () => {
+    expect(servicio).toBeTruthy();
   });
 });

@@ -1,19 +1,19 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { Auth } from '../../../core/services/auth';
+import { Autenticacion } from '../../../core/services/auth';
 
+/** Barra de navegación con enlaces según el rol del usuario. */
 @Component({
   selector: 'app-navbar',
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })
-export class Navbar {
-  private readonly auth = inject(Auth);
+export class BarraNavegacion {
+  private readonly autenticacion = inject(Autenticacion);
 
-  // Signal con el perfil logueado (null si es anónimo).
-  // Se asume que Auth expone esto sincronizado con supabase.auth.onAuthStateChange()
-  protected perfil = this.auth.perfilActual;
+  /** Perfil del usuario logueado (null si es anónimo). */
+  protected perfil = this.autenticacion.perfilActual;
 
   protected rol = computed(() => {
     return this.perfil()?.rol?.trim().toLowerCase() ?? '';
@@ -24,7 +24,8 @@ export class Navbar {
   protected esEmpleado = computed(() => this.rol() === 'empleado');
   protected esAdmin = computed(() => this.rol() === 'admin');
 
+  /** Cierra la sesión del usuario actual. */
   async cerrarSesion(): Promise<void> {
-    await this.auth.logout();
+    await this.autenticacion.cerrarSesion();
   }
 }

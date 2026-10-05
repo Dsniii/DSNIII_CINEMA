@@ -1,7 +1,7 @@
 import { MonedaArsPipe } from './moneda-ars-pipe';
 
 describe('MonedaArsPipe', () => {
-  it('create an instance', () => {
+  it('crea una instancia', () => {
     const pipe = new MonedaArsPipe();
     expect(pipe).toBeTruthy();
   });

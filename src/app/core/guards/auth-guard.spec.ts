@@ -1,35 +1,35 @@
 import { TestBed } from '@angular/core/testing';
 import { CanActivateFn, Router, provideRouter } from '@angular/router';
 import { authGuard } from './auth-guard';
-import { Auth } from '../services/auth';
+import { Autenticacion } from '../services/auth';
 
 describe('authGuard', () => {
-  const executeGuard: CanActivateFn = (...guardParameters) =>
-    TestBed.runInInjectionContext(() => authGuard(...guardParameters));
+  const executeGuard: CanActivateFn = (...parametrosGuard) =>
+    TestBed.runInInjectionContext(() => authGuard(...parametrosGuard));
 
-  let auth: { getSession: () => Promise<{ data: { session: null }; error: null }> };
+  let autenticacion: { obtenerSesion: () => Promise<{ data: { session: null }; error: null }> };
 
   beforeEach(() => {
-    auth = {
-      getSession: async () => ({ data: { session: null }, error: null }),
+    autenticacion = {
+      obtenerSesion: async () => ({ data: { session: null }, error: null }),
     };
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: Auth, useValue: auth },
+        { provide: Autenticacion, useValue: autenticacion },
         provideRouter([]),
       ],
     });
   });
 
-  it('should be created', () => {
+  it('debería crearse', () => {
     expect(executeGuard).toBeTruthy();
   });
 
-  it('should block unauthenticated users', async () => {
-    const router = TestBed.inject(Router);
-    const result = await executeGuard({} as any, {} as any);
+  it('debería bloquear usuarios sin sesión', async () => {
+    const enrutador = TestBed.inject(Router);
+    const resultado = await executeGuard({} as any, {} as any);
 
-    expect(result).toEqual(router.createUrlTree(['/auth/login']));
+    expect(resultado).toEqual(enrutador.createUrlTree(['/auth/login']));
   });
 });

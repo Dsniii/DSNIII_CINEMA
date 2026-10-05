@@ -2,14 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { Generos } from './generos';
 
 describe('Generos', () => {
-  let service: Generos;
+  let servicio: Generos;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Generos);
+    servicio = TestBed.inject(Generos);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  it('debería crearse', () => {
+    expect(servicio).toBeTruthy();
   });
 });

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SeleccionButacas } from './seleccion-butacas';
 
 describe('SeleccionButacas', () => {
-  let component: SeleccionButacas;
+  let componente: SeleccionButacas;
   let fixture: ComponentFixture<SeleccionButacas>;
 
   beforeEach(async () => {
@@ -11,11 +11,11 @@ describe('SeleccionButacas', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(SeleccionButacas);
-    component = fixture.componentInstance;
+    componente = fixture.componentInstance;
     await fixture.whenStable();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(componente).toBeTruthy();
   });
 });

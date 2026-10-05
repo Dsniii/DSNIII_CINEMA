@@ -2,14 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { Validacion } from './validacion';
 
 describe('Validacion', () => {
-  let service: Validacion;
+  let servicio: Validacion;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Validacion);
+    servicio = TestBed.inject(Validacion);
   });
 
   it('should be created', () => {
-    expect(service).toBeTruthy();
+    expect(servicio).toBeTruthy();
   });
 });

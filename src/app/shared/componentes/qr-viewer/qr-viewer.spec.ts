@@ -1,21 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { QrViewer } from './qr-viewer';
+import { VisorQr } from './qr-viewer';
 
-describe('QrViewer', () => {
-  let component: QrViewer;
-  let fixture: ComponentFixture<QrViewer>;
+describe('VisorQr', () => {
+  let componente: VisorQr;
+  let fixture: ComponentFixture<VisorQr>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [QrViewer],
+      imports: [VisorQr],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(QrViewer);
-    component = fixture.componentInstance;
+    fixture = TestBed.createComponent(VisorQr);
+    componente = fixture.componentInstance;
     await fixture.whenStable();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(componente).toBeTruthy();
   });
 });

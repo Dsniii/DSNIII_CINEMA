@@ -1,21 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Footer } from './footer';
+import { PiePagina } from './footer';
 
-describe('Footer', () => {
-  let component: Footer;
-  let fixture: ComponentFixture<Footer>;
+describe('PiePagina', () => {
+  let componente: PiePagina;
+  let fixture: ComponentFixture<PiePagina>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Footer],
+      imports: [PiePagina],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Footer);
-    component = fixture.componentInstance;
+    fixture = TestBed.createComponent(PiePagina);
+    componente = fixture.componentInstance;
     await fixture.whenStable();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(componente).toBeTruthy();
   });
 });

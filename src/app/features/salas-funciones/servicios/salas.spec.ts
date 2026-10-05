@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
-import { SupabaseClient as SupabaseClientService } from '../../../core/services/supabase-client';
+import { ClienteSupabase } from '../../../core/services/supabase-client';
 import { generarButacas, Salas } from './salas';
 
 describe('Salas', () => {
-  let service: Salas;
+  let servicio: Salas;
   let consultaSalas: {
     select: ReturnType<typeof vi.fn>;
     insert: ReturnType<typeof vi.fn>;
@@ -52,34 +52,34 @@ describe('Salas', () => {
     TestBed.configureTestingModule({
       providers: [
         {
-          provide: SupabaseClientService,
-          useValue: { client: { from, rpc } },
+          provide: ClienteSupabase,
+          useValue: { cliente: { from, rpc } },
         },
       ],
     });
-    service = TestBed.inject(Salas);
+    servicio = TestBed.inject(Salas);
   });
 
   it('should be created', () => {
-    expect(service).toBeTruthy();
+    expect(servicio).toBeTruthy();
   });
 
   it('lista las salas de la base ordenadas por id', async () => {
-    const salas = await service.listarSalas();
+    const salas = await servicio.listarSalas();
 
     expect(consultaSalas.select).toHaveBeenCalledWith('id, nombre');
     expect(salas.map((sala) => sala.nombre)).toEqual(['Sala 1', 'Sala 2']);
   });
 
   it('actualiza el nombre de la sala en la base', async () => {
-    const sala = await service.actualizarNombreSala(42, 'Sala renombrada');
+    const sala = await servicio.actualizarNombreSala(42, 'Sala renombrada');
 
     expect(consultaSalas.update).toHaveBeenCalledWith({ nombre: 'Sala renombrada' });
     expect(sala).toEqual({ id: 42, nombre: 'Sala renombrada' });
   });
 
   it('elimina la sala y sus butacas mediante la función transaccional', async () => {
-    await service.eliminarSalaConButacas(42);
+    await servicio.eliminarSalaConButacas(42);
 
     expect(rpc).toHaveBeenCalledWith('eliminar_sala_con_butacas', { p_sala_id: '42' });
   });
@@ -102,7 +102,7 @@ describe('Salas', () => {
   });
 
   it('crea la sala y luego inserta sus 532 butacas asociadas', async () => {
-    const sala = await service.crearSalaConButacas('Sala de prueba');
+    const sala = await servicio.crearSalaConButacas('Sala de prueba');
     const butacas = insertarButacas.mock.calls[0][0];
 
     expect(sala).toEqual({ id: 42, nombre: 'Sala de prueba' });
@@ -116,7 +116,7 @@ describe('Salas', () => {
   it('revierte la sala si falla la inserción de butacas', async () => {
     errorInsercionButacas = { message: 'Error de prueba' };
 
-    await expect(service.crearSalaConButacas('Sala de prueba')).rejects.toThrow(
+    await expect(servicio.crearSalaConButacas('Sala de prueba')).rejects.toThrow(
       'No se pudieron crear las butacas: Error de prueba.',
     );
     expect(consultaSalas.delete).toHaveBeenCalledOnce();

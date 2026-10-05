@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+/** Pantalla con los datos personales del usuario. */
 @Component({
   imports: [],
   selector: 'app-datos-personales',

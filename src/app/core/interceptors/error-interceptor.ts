@@ -1,5 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
-export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  return next(req);
+/** Interceptor HTTP de errores; por ahora deja pasar la solicitud sin cambios. */
+export const errorInterceptor: HttpInterceptorFn = (solicitud, siguiente) => {
+  return siguiente(solicitud);
 };

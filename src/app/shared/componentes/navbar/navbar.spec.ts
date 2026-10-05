@@ -1,35 +1,35 @@
 import { signal, type WritableSignal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { Auth, type PerfilActual } from '../../../core/services/auth';
-import { Navbar } from './navbar';
+import { Autenticacion, type PerfilActual } from '../../../core/services/auth';
+import { BarraNavegacion } from './navbar';
 
-describe('Navbar', () => {
-  let component: Navbar;
-  let fixture: ComponentFixture<Navbar>;
+describe('BarraNavegacion', () => {
+  let componente: BarraNavegacion;
+  let fixture: ComponentFixture<BarraNavegacion>;
   let perfilActual: WritableSignal<PerfilActual | null>;
 
   beforeEach(async () => {
     perfilActual = signal<PerfilActual | null>(null);
 
     await TestBed.configureTestingModule({
-      imports: [Navbar],
+      imports: [BarraNavegacion],
       providers: [
         provideRouter([]),
-        { provide: Auth, useValue: { perfilActual, logout: async () => undefined } },
+        { provide: Autenticacion, useValue: { perfilActual, cerrarSesion: async () => undefined } },
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Navbar);
-    component = fixture.componentInstance;
+    fixture = TestBed.createComponent(BarraNavegacion);
+    componente = fixture.componentInstance;
     await fixture.whenStable();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('debería crearse', () => {
+    expect(componente).toBeTruthy();
   });
 
-  it('shows customer links only for customers', () => {
+  it('muestra enlaces de cliente solo a clientes', () => {
     perfilActual.set({ nombre: 'Cliente', rol: 'cliente' });
     fixture.detectChanges();
 
@@ -38,7 +38,7 @@ describe('Navbar', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Validar QR');
   });
 
-  it('shows QR validation for employees', () => {
+  it('muestra validación QR a empleados', () => {
     perfilActual.set({ nombre: 'Empleado', rol: 'empleado' });
     fixture.detectChanges();
 
@@ -46,7 +46,7 @@ describe('Navbar', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Dashboard');
   });
 
-  it('shows admin links and valid destinations for admins', () => {
+  it('muestra enlaces y destinos válidos a administradores', () => {
     perfilActual.set({ nombre: 'Admin', rol: 'admin' });
     fixture.detectChanges();
 

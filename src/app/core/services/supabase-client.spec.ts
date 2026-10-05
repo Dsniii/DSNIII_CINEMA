@@ -1,15 +1,15 @@
 import { TestBed } from '@angular/core/testing';
-import { SupabaseClient } from './supabase-client';
+import { ClienteSupabase } from './supabase-client';
 
-describe('SupabaseClient', () => {
-  let service: SupabaseClient;
+describe('ClienteSupabase', () => {
+  let servicio: ClienteSupabase;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(SupabaseClient);
+    servicio = TestBed.inject(ClienteSupabase);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  it('debería crearse', () => {
+    expect(servicio).toBeTruthy();
   });
 });

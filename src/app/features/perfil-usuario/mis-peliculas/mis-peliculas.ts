@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+/** Pantalla con las películas vistas por el usuario. */
 @Component({
   imports: [],
   selector: 'app-mis-peliculas',

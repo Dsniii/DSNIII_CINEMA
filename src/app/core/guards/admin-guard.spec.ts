@@ -1,15 +1,15 @@
 import { signal, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CanMatchFn, Router, provideRouter } from '@angular/router';
-import { Auth, type PerfilActual } from '../services/auth';
+import { Autenticacion, type PerfilActual } from '../services/auth';
 import { adminGuard } from './admin-guard';
 
 describe('adminGuard', () => {
-  const executeGuard: CanMatchFn = (...guardParameters) =>
-    TestBed.runInInjectionContext(() => adminGuard(...guardParameters));
+  const executeGuard: CanMatchFn = (...parametrosGuard) =>
+    TestBed.runInInjectionContext(() => adminGuard(...parametrosGuard));
 
-  let auth: {
-    getUser: () => Promise<{ data: { user: object | null }; error: null }>;
+  let autenticacion: {
+    obtenerUsuario: () => Promise<{ data: { user: object | null }; error: null }>;
     sincronizarPerfil: () => Promise<void>;
     perfilActual: WritableSignal<PerfilActual | null>;
   };
@@ -17,30 +17,30 @@ describe('adminGuard', () => {
 
   beforeEach(() => {
     perfilActual = signal<PerfilActual | null>({ nombre: 'Usuario', rol: 'cliente' });
-    auth = {
-      getUser: async () => ({ data: { user: {} }, error: null }),
+    autenticacion = {
+      obtenerUsuario: async () => ({ data: { user: {} }, error: null }),
       sincronizarPerfil: async () => undefined,
       perfilActual,
     };
 
     TestBed.configureTestingModule({
-      providers: [{ provide: Auth, useValue: auth }, provideRouter([])],
+      providers: [{ provide: Autenticacion, useValue: autenticacion }, provideRouter([])],
     });
   });
 
-  it('allows admins and denies other roles', async () => {
-    const router = TestBed.inject(Router);
+  it('permite admins y deniega otros roles', async () => {
+    const enrutador = TestBed.inject(Router);
 
-    expect(await executeGuard({} as any, {} as any, {} as any)).toEqual(router.createUrlTree(['/']));
+    expect(await executeGuard({} as any, {} as any, {} as any)).toEqual(enrutador.createUrlTree(['/']));
 
     perfilActual.set({ nombre: 'Admin', rol: 'admin' });
     expect(await executeGuard({} as any, {} as any, {} as any)).toBe(true);
   });
 
-  it('redirects unauthenticated users to login', async () => {
-    auth.getUser = async () => ({ data: { user: null }, error: null });
-    const router = TestBed.inject(Router);
+  it('redirige a login a usuarios sin sesión', async () => {
+    autenticacion.obtenerUsuario = async () => ({ data: { user: null }, error: null });
+    const enrutador = TestBed.inject(Router);
 
-    expect(await executeGuard({} as any, {} as any, {} as any)).toEqual(router.createUrlTree(['/auth/login']));
+    expect(await executeGuard({} as any, {} as any, {} as any)).toEqual(enrutador.createUrlTree(['/auth/login']));
   });
 });

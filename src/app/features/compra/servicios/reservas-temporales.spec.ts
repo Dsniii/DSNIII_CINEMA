@@ -2,14 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { ReservasTemporales } from './reservas-temporales';
 
 describe('ReservasTemporales', () => {
-  let service: ReservasTemporales;
+  let servicio: ReservasTemporales;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(ReservasTemporales);
+    servicio = TestBed.inject(ReservasTemporales);
   });
 
   it('should be created', () => {
-    expect(service).toBeTruthy();
+    expect(servicio).toBeTruthy();
   });
 });

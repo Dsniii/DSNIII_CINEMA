@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { GestionSalas } from './gestion-salas';
-import { Salas as SalasService } from '../servicios/salas';
+import { Salas as ServicioSalas } from '../servicios/salas';
+import { Funciones } from '../servicios/funciones';
+import { Peliculas } from '../../peliculas/servicios/peliculas';
 
-const salasServiceMock = {
+const servicioSalasSimulado = {
   listarSalas: vi.fn(async () => [
     { id: 1, nombre: 'Sala 1' },
     { id: 2, nombre: 'Sala 2' },
@@ -15,8 +17,31 @@ const salasServiceMock = {
   eliminarSalaConButacas: vi.fn(async () => undefined),
 };
 
+const servicioFuncionesSimulado = {
+  listarPorSala: vi.fn(async (salaId: number | string) => [
+    {
+      id: `funcion-${salaId}`,
+      pelicula_id: 'pelicula-1',
+      sala_id: String(salaId),
+      fecha: '2026-10-20',
+      hora_inicio: '14:00:00',
+      hora_fin: '16:15:00',
+      formato: '2D' as const,
+      idioma: 'castellano' as const,
+      precio_base: 10,
+      precio_vip: 15,
+      en_preventa: false,
+      precio_preventa: 0,
+    },
+  ]),
+};
+
+const servicioPeliculasSimulado = {
+  listarNombres: vi.fn(async () => [{ id: 'pelicula-1', nombre: 'Película de prueba' }]),
+};
+
 describe('GestionSalas', () => {
-  let component: GestionSalas;
+  let componente: GestionSalas;
   let fixture: ComponentFixture<GestionSalas>;
 
   beforeEach(async () => {
@@ -24,56 +49,60 @@ describe('GestionSalas', () => {
 
     await TestBed.configureTestingModule({
       imports: [GestionSalas],
-      providers: [{ provide: SalasService, useValue: salasServiceMock }],
+      providers: [
+        { provide: ServicioSalas, useValue: servicioSalasSimulado },
+        { provide: Funciones, useValue: servicioFuncionesSimulado },
+        { provide: Peliculas, useValue: servicioPeliculasSimulado },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GestionSalas);
-    component = fixture.componentInstance;
+    componente = fixture.componentInstance;
     fixture.detectChanges();
     await fixture.whenStable();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(componente).toBeTruthy();
   });
 
   it('muestra las 20 filas y calcula 532 butacas', () => {
     fixture.detectChanges();
 
-    expect(component.totalFilas()).toBe(20);
-    expect(component.totalButacas()).toBe(532);
-    expect(component.mapaButacas()).toHaveLength(20);
+    expect(componente.totalFilas()).toBe(20);
+    expect(componente.totalButacas()).toBe(532);
+    expect(componente.mapaButacas()).toHaveLength(20);
     expect(
-      component
+      componente
         .mapaButacas()
         .slice(0, 3)
         .map((fila) => fila.letra),
     ).toEqual(['J', 'K', 'A']);
     expect(
-      component
+      componente
         .mapaButacas()
         .slice(0, 2)
         .map((fila) => fila.numero),
     ).toEqual([10, 11]);
     expect(
-      component
+      componente
         .mapaButacas()
         .find((fila) => fila.numero === 1)
         ?.bloquesButacas.map((bloque) => bloque.length),
     ).toEqual([4, 20, 4]);
     expect(
-      component
+      componente
         .mapaButacas()
         .find((fila) => fila.numero === 10)
         ?.bloquesButacas.map((bloque) => bloque.length),
     ).toEqual([2, 10, 2]);
     expect(
-      component
+      componente
         .mapaButacas()
         .find((fila) => fila.numero === 11)
         ?.bloquesButacas.map((bloque) => bloque.length),
     ).toEqual([2, 10, 2]);
-    expect(component.mapaButacas()[19].letra).toBe('T');
+    expect(componente.mapaButacas()[19].letra).toBe('T');
     expect(fixture.nativeElement.querySelectorAll('.seat-row')).toHaveLength(20);
     expect(fixture.nativeElement.querySelectorAll('.seat')).toHaveLength(532);
   });
@@ -82,37 +111,55 @@ describe('GestionSalas', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.seat-map')).not.toBeNull();
 
-    component.salas.set([]);
-    component.salaSeleccionadaId.set(null);
+    componente.salas.set([]);
+    componente.salaSeleccionadaId.set(null);
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.seat-map')).toBeNull();
   });
 
   it('carga las salas del servicio y selecciona la primera', () => {
-    expect(salasServiceMock.listarSalas).toHaveBeenCalledOnce();
-    expect(component.salas().map((sala) => sala.nombre)).toEqual([
+    expect(servicioSalasSimulado.listarSalas).toHaveBeenCalledOnce();
+    expect(componente.salas().map((sala) => sala.nombre)).toEqual([
       'Sala 1',
       'Sala 2',
       'Sala 3',
       'Sala 4',
     ]);
-    expect(component.salaSeleccionada()?.id).toBe(1);
+    expect(componente.salaSeleccionada()?.id).toBe(1);
+  });
+
+  it('muestra las funciones de la sala seleccionada con el nombre de la película', async () => {
+    await componente.cargarFuncionesSala(1);
+    fixture.detectChanges();
+
+    expect(servicioFuncionesSimulado.listarPorSala).toHaveBeenCalledWith(1);
+    expect(fixture.nativeElement.textContent).toContain('Película de prueba');
+    expect(fixture.nativeElement.textContent).toContain('20/10/2026');
+    expect(fixture.nativeElement.textContent).toContain('14:00–16:15');
+  });
+
+  it('carga las funciones al cambiar de sala', async () => {
+    componente.seleccionarSala({ id: 2, nombre: 'Sala 2' });
+    await fixture.whenStable();
+
+    expect(servicioFuncionesSimulado.listarPorSala).toHaveBeenCalledWith(2);
+    expect(componente.funcionesSala()[0].sala_id).toBe('2');
   });
 
   it('permite agregar, renombrar y eliminar una sala', async () => {
-    await component.crearSala();
-    expect(component.salas()).toHaveLength(5);
-    expect(salasServiceMock.crearSalaConButacas).toHaveBeenCalledWith('Sala 5');
+    await componente.crearSala();
+    expect(componente.salas()).toHaveLength(5);
+    expect(servicioSalasSimulado.crearSalaConButacas).toHaveBeenCalledWith('Sala 5');
 
-    component.nombreSala.set('Sala Premium');
-    await component.guardarSala();
-    expect(component.salaSeleccionada()?.nombre).toBe('Sala Premium');
-    expect(salasServiceMock.actualizarNombreSala).toHaveBeenCalledWith(5, 'Sala Premium');
+    componente.nombreSala.set('Sala Premium');
+    await componente.guardarSala();
+    expect(componente.salaSeleccionada()?.nombre).toBe('Sala Premium');
+    expect(servicioSalasSimulado.actualizarNombreSala).toHaveBeenCalledWith(5, 'Sala Premium');
 
     vi.spyOn(window, 'confirm').mockReturnValue(true);
-    await component.eliminarSala();
-    expect(component.salas()).toHaveLength(4);
-    expect(salasServiceMock.eliminarSalaConButacas).toHaveBeenCalledWith(5);
+    await componente.eliminarSala();
+    expect(componente.salas()).toHaveLength(4);
+    expect(servicioSalasSimulado.eliminarSalaConButacas).toHaveBeenCalledWith(5);
   });
 });

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
+/** Pantalla con el listado de películas en cartelera. */
 @Component({
   imports: [FormsModule],
   selector: 'app-listado-peliculas',
@@ -9,7 +10,7 @@ import { Router } from '@angular/router';
   templateUrl: './listado-peliculas.html',
 })
 export class ListadoPeliculas {
-  constructor(private router: Router) {}
+  constructor(private enrutador: Router) {}
 
   
 }

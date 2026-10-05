@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+/** Pantalla de confirmación de la entrada comprada. */
 @Component({
   imports: [],
   selector: 'app-confirmacion-entrada',

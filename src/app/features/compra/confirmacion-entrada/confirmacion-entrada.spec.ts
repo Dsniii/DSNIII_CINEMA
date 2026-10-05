@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmacionEntrada } from './confirmacion-entrada';
 
 describe('ConfirmacionEntrada', () => {
-  let component: ConfirmacionEntrada;
+  let componente: ConfirmacionEntrada;
   let fixture: ComponentFixture<ConfirmacionEntrada>;
 
   beforeEach(async () => {
@@ -11,11 +11,11 @@ describe('ConfirmacionEntrada', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(ConfirmacionEntrada);
-    component = fixture.componentInstance;
+    componente = fixture.componentInstance;
     await fixture.whenStable();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(componente).toBeTruthy();
   });
 });

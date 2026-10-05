@@ -2,14 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { Resenas } from './resenas';
 
 describe('Resenas', () => {
-  let service: Resenas;
+  let servicio: Resenas;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Resenas);
+    servicio = TestBed.inject(Resenas);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  it('debería crearse', () => {
+    expect(servicio).toBeTruthy();
   });
 });

@@ -1,15 +1,15 @@
 <div class="register">
   <h2>Register</h2>
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
+  <div *ngIf="mensajeError" class="error-message">
+    {{ mensajeError }}
   </div>
 
-  <div *ngIf="successMessage" class="success-message">
-    {{ successMessage }}
+  <div *ngIf="mensajeExito" class="success-message">
+    {{ mensajeExito }}
   </div>
 
-  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+  <form [formGroup]="formularioRegistro" (ngSubmit)="enviar()">
     <label>
       Nombre:
       <input type="text" formControlName="nombre" />
@@ -27,12 +27,12 @@
 
     <label>
       Email:
-      <input type="email" formControlName="email" />
+      <input type="email" formControlName="correo" />
     </label>
 
     <label>
       Password:
-      <input type="password" formControlName="password" />
+      <input type="password" formControlName="contrasena" />
     </label>
 
     <button type="submit">Registrarse</button>

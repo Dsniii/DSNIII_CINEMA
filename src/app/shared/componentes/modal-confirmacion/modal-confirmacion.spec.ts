@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ModalConfirmacion } from './modal-confirmacion';
 
 describe('ModalConfirmacion', () => {
-  let component: ModalConfirmacion;
+  let componente: ModalConfirmacion;
   let fixture: ComponentFixture<ModalConfirmacion>;
 
   beforeEach(async () => {
@@ -11,11 +11,11 @@ describe('ModalConfirmacion', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(ModalConfirmacion);
-    component = fixture.componentInstance;
+    componente = fixture.componentInstance;
     await fixture.whenStable();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(componente).toBeTruthy();
   });
 });

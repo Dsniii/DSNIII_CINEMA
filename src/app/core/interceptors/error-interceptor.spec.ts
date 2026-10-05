@@ -3,14 +3,14 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { errorInterceptor } from './error-interceptor';
 
 describe('errorInterceptor', () => {
-  const interceptor: HttpInterceptorFn = (req, next) =>
-    TestBed.runInInjectionContext(() => errorInterceptor(req, next));
+  const interceptor: HttpInterceptorFn = (solicitud, siguiente) =>
+    TestBed.runInInjectionContext(() => errorInterceptor(solicitud, siguiente));
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
   });
 
-  it('should be created', () => {
+  it('debería crearse', () => {
     expect(interceptor).toBeTruthy();
   });
 });

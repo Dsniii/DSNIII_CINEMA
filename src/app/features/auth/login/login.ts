@@ -2,8 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Auth } from '../../../core/services/auth';
+import { Autenticacion } from '../../../core/services/auth';
 
+/** Pantalla de inicio de sesión. */
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -11,46 +12,47 @@ import { Auth } from '../../../core/services/auth';
   styleUrl: './login.css',
   templateUrl: './login.html',
 })
-export class Login {
-  private readonly fb = inject(FormBuilder);
-  private readonly router = inject(Router);
-  private readonly auth = inject(Auth);
+export class InicioSesion {
+  private readonly constructorFormularios = inject(FormBuilder);
+  private readonly enrutador = inject(Router);
+  private readonly autenticacion = inject(Autenticacion);
 
-  errorMessage = '';
+  mensajeError = '';
 
-  loginForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]],
+  formularioLogin = this.constructorFormularios.group({
+    correo: ['', [Validators.required, Validators.email]],
+    contrasena: ['', [Validators.required]],
   });
 
-  async onSubmit(): Promise<void> {
-    this.errorMessage = '';
+  /** Valida el formulario, inicia sesión y redirige al inicio. */
+  async enviar(): Promise<void> {
+    this.mensajeError = '';
 
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
-      this.errorMessage = 'Completa el email y la contraseña correctamente.';
+    if (this.formularioLogin.invalid) {
+      this.formularioLogin.markAllAsTouched();
+      this.mensajeError = 'Completa el email y la contraseña correctamente.';
       return;
     }
 
-    const email = this.loginForm.get('email')?.value?.trim() ?? '';
-    const password = this.loginForm.get('password')?.value ?? '';
+    const correo = this.formularioLogin.get('correo')?.value?.trim() ?? '';
+    const contrasena = this.formularioLogin.get('contrasena')?.value ?? '';
 
     try {
-      const { error } = await this.auth.signIn(email, password);
+      const { error } = await this.autenticacion.iniciarSesion(correo, contrasena);
 
       if (error) {
         console.error('Error al iniciar sesión:', error.message);
-        this.errorMessage = error.message.toLowerCase().includes('email not confirmed')
+        this.mensajeError = error.message.toLowerCase().includes('email not confirmed')
           ? 'Confirma tu correo electrónico antes de iniciar sesión.'
           : 'Email o contraseña incorrectos.';
         return;
       }
 
-      await this.auth.sincronizarPerfil();
-      await this.router.navigate(['/']);
+      await this.autenticacion.sincronizarPerfil();
+      await this.enrutador.navigate(['/']);
     } catch (error) {
       console.error('Error inesperado en login:', error);
-      this.errorMessage = 'No se pudo iniciar sesión. Intenta de nuevo.';
+      this.mensajeError = 'No se pudo iniciar sesión. Intenta de nuevo.';
     }
   }
 }

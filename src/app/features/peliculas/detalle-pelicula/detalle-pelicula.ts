@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+/** Pantalla con el detalle de una película. */
 @Component({
   imports: [],
   selector: 'app-detalle-pelicula',

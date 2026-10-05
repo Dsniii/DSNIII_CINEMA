@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Proximamente } from './proximamente';
 
 describe('Proximamente', () => {
-  let component: Proximamente;
+  let componente: Proximamente;
   let fixture: ComponentFixture<Proximamente>;
 
   beforeEach(async () => {
@@ -11,11 +11,11 @@ describe('Proximamente', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(Proximamente);
-    component = fixture.componentInstance;
+    componente = fixture.componentInstance;
     await fixture.whenStable();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('debería crearse', () => {
+    expect(componente).toBeTruthy();
   });
 });

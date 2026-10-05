@@ -1,19 +1,19 @@
 <div class="login-form">
   <h2>Login</h2>
 
-  <div *ngIf="errorMessage" class="error-message" role="alert">
-    {{ errorMessage }}
+  <div *ngIf="mensajeError" class="error-message" role="alert">
+    {{ mensajeError }}
   </div>
 
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+  <form [formGroup]="formularioLogin" (ngSubmit)="enviar()">
     <label>
       Email:
-      <input type="email" formControlName="email" />
+      <input type="email" formControlName="correo" />
     </label>
 
     <label>
       Password:
-      <input type="password" formControlName="password" />
+      <input type="password" formControlName="contrasena" />
     </label>
 
     <button type="submit">Ingresar</button>

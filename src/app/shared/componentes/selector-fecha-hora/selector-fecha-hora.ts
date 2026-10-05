@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+/** Selector de fecha y hora de una función. */
 @Component({
   imports: [],
   selector: 'app-selector-fecha-hora',

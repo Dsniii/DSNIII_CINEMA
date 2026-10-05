@@ -1,21 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Dashboard } from './dashboard';
+import { Tablero } from './dashboard';
 
-describe('Dashboard', () => {
-  let component: Dashboard;
-  let fixture: ComponentFixture<Dashboard>;
+describe('Tablero', () => {
+  let componente: Tablero;
+  let fixture: ComponentFixture<Tablero>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Dashboard],
+      imports: [Tablero],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Dashboard);
-    component = fixture.componentInstance;
+    fixture = TestBed.createComponent(Tablero);
+    componente = fixture.componentInstance;
     await fixture.whenStable();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(componente).toBeTruthy();
   });
 });

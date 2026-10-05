@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+/** Pantalla con el crédito disponible del usuario. */
 @Component({
   imports: [],
   selector: 'app-mi-credito',

@@ -1,47 +1,47 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { Auth } from '../../../core/services/auth';
-import { Login } from './login';
+import { Autenticacion } from '../../../core/services/auth';
+import { InicioSesion } from './login';
 
-describe('Login', () => {
-  let component: Login;
-  let fixture: ComponentFixture<Login>;
-  let profileSyncCount: number;
+describe('InicioSesion', () => {
+  let componente: InicioSesion;
+  let fixture: ComponentFixture<InicioSesion>;
+  let contadorSincronizaciones: number;
 
   beforeEach(async () => {
-    profileSyncCount = 0;
+    contadorSincronizaciones = 0;
 
     await TestBed.configureTestingModule({
-      imports: [Login],
+      imports: [InicioSesion],
       providers: [
         provideRouter([]),
         {
-          provide: Auth,
+          provide: Autenticacion,
           useValue: {
-            signIn: async () => ({ error: null }),
+            iniciarSesion: async () => ({ error: null }),
             sincronizarPerfil: async () => {
-              profileSyncCount++;
+              contadorSincronizaciones++;
             },
           },
         },
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Login);
-    component = fixture.componentInstance;
+    fixture = TestBed.createComponent(InicioSesion);
+    componente = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('debería crearse', () => {
+    expect(componente).toBeTruthy();
   });
 
-  it('synchronizes the profile after successful authentication', async () => {
-    component.loginForm.setValue({ email: 'admin@example.com', password: 'password' });
+  it('sincroniza el perfil tras autenticarse correctamente', async () => {
+    componente.formularioLogin.setValue({ correo: 'admin@example.com', contrasena: 'password' });
 
-    await component.onSubmit();
+    await componente.enviar();
 
-    expect(profileSyncCount).toBe(1);
+    expect(contadorSincronizaciones).toBe(1);
   });
 });
 

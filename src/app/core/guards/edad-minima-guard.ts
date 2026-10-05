@@ -1,33 +1,35 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { Auth } from '../services/auth';
+import { Autenticacion } from '../services/auth';
 
+/** Exige usuario con sesión y mayoría de edad (18 años) según su fecha de nacimiento. */
 export const edadMinimaGuard: CanActivateFn = async () => {
-  const auth = inject(Auth);
-  const router = inject(Router);
+  const autenticacion = inject(Autenticacion);
+  const enrutador = inject(Router);
 
-  const { data } = await auth.getUser();
+  const { data } = await autenticacion.obtenerUsuario();
 
   if (!data.user) {
-    return router.createUrlTree(['/auth/login']);
+    return enrutador.createUrlTree(['/auth/login']);
   }
 
-  const birthDate = data.user.user_metadata?.['fecha_nacimiento'] ?? '';
+  const fechaNacimiento = data.user.user_metadata?.['fecha_nacimiento'] ?? '';
 
-  if (!birthDate) {
-    return router.createUrlTree(['/perfil/datos']);
+  if (!fechaNacimiento) {
+    return enrutador.createUrlTree(['/perfil/datos']);
   }
 
-  const birth = new Date(birthDate);
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
+  const nacimiento = new Date(fechaNacimiento);
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - nacimiento.getFullYear();
 
+  // Aún no cumplió años este año.
   if (
-    today.getMonth() < birth.getMonth() ||
-    (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())
+    hoy.getMonth() < nacimiento.getMonth() ||
+    (hoy.getMonth() === nacimiento.getMonth() && hoy.getDate() < nacimiento.getDate())
   ) {
-    age--;
+    edad--;
   }
 
-  return age >= 18 ? true : router.createUrlTree(['/']);
+  return edad >= 18 ? true : enrutador.createUrlTree(['/']);
 };

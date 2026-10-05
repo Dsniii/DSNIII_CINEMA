@@ -1,21 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Loader } from './loader';
+import { Cargador } from './loader';
 
-describe('Loader', () => {
-  let component: Loader;
-  let fixture: ComponentFixture<Loader>;
+describe('Cargador', () => {
+  let componente: Cargador;
+  let fixture: ComponentFixture<Cargador>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Loader],
+      imports: [Cargador],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Loader);
-    component = fixture.componentInstance;
+    fixture = TestBed.createComponent(Cargador);
+    componente = fixture.componentInstance;
     await fixture.whenStable();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(componente).toBeTruthy();
   });
 });

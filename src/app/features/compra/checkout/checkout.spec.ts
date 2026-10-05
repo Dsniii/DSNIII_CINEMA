@@ -1,21 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Checkout } from './checkout';
+import { Pago } from './checkout';
 
-describe('Checkout', () => {
-  let component: Checkout;
-  let fixture: ComponentFixture<Checkout>;
+describe('Pago', () => {
+  let componente: Pago;
+  let fixture: ComponentFixture<Pago>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Checkout],
+      imports: [Pago],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Checkout);
-    component = fixture.componentInstance;
+    fixture = TestBed.createComponent(Pago);
+    componente = fixture.componentInstance;
     await fixture.whenStable();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(componente).toBeTruthy();
   });
 });

@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
-import { SupabaseClient as SupabaseClientService } from '../../../core/services/supabase-client';
+import { ClienteSupabase } from '../../../core/services/supabase-client';
 
+/** Sala con su identificador y nombre. */
 export interface SalaCreada {
   id: number | string;
   nombre: string;
 }
 
+/** Butaca a insertar para una sala. */
 export interface ButacaNueva {
   sala_id: number | string;
   fila: number;
@@ -13,13 +15,15 @@ export interface ButacaNueva {
   tipo: 'normal' | 'accesible' | 'vip';
 }
 
+/** Distribución de la sala: filas totales, filas accesibles y primera fila VIP. */
 const CANTIDAD_FILAS = 20;
 const FILAS_ACCESIBLES = new Set([10, 11]);
 const PRIMERA_FILA_VIP = 18;
 
+/** Genera las butacas de una sala: filas 10-11 accesibles (14 columnas), desde la 18 VIP. */
 export function generarButacas(salaId: number | string): ButacaNueva[] {
-  return Array.from({ length: CANTIDAD_FILAS }, (_, indexFila) => {
-    const fila = indexFila + 1;
+  return Array.from({ length: CANTIDAD_FILAS }, (_, indiceFila) => {
+    const fila = indiceFila + 1;
     const esAccesible = FILAS_ACCESIBLES.has(fila);
     const cantidadColumnas = esAccesible ? 14 : 28;
     const tipo: ButacaNueva['tipo'] = esAccesible
@@ -28,21 +32,23 @@ export function generarButacas(salaId: number | string): ButacaNueva[] {
         ? 'vip'
         : 'normal';
 
-    return Array.from({ length: cantidadColumnas }, (_, indexColumna) => ({
+    return Array.from({ length: cantidadColumnas }, (_, indiceColumna) => ({
       sala_id: salaId,
       fila,
-      columna: indexColumna + 1,
+      columna: indiceColumna + 1,
       tipo,
     }));
   }).flat();
 }
 
+/** Gestión de salas y sus butacas. */
 @Injectable({ providedIn: 'root' })
 export class Salas {
-  constructor(private readonly supabaseClient: SupabaseClientService) {}
+  constructor(private readonly clienteSupabase: ClienteSupabase) {}
 
+  /** Lista las salas ordenadas por id. */
   async listarSalas(): Promise<SalaCreada[]> {
-    const { data, error } = await this.supabaseClient.client
+    const { data, error } = await this.clienteSupabase.cliente
       .from('salas')
       .select('id, nombre')
       .order('id', { ascending: true });
@@ -57,9 +63,10 @@ export class Salas {
     }));
   }
 
+  /** Crea la sala y sus butacas; si fallan las butacas, revierte la sala. */
   async crearSalaConButacas(nombre: string): Promise<SalaCreada> {
-    const client = this.supabaseClient.client;
-    const { data: sala, error: errorSala } = await client
+    const cliente = this.clienteSupabase.cliente;
+    const { data: sala, error: errorSala } = await cliente
       .from('salas')
       .insert({ nombre })
       .select('id, nombre')
@@ -70,10 +77,10 @@ export class Salas {
     }
 
     const butacas = generarButacas(sala.id as number | string);
-    const { error: errorButacas } = await client.from('butacas').insert(butacas);
+    const { error: errorButacas } = await cliente.from('butacas').insert(butacas);
 
     if (errorButacas) {
-      const { error: errorRollback } = await client.from('salas').delete().eq('id', sala.id);
+      const { error: errorRollback } = await cliente.from('salas').delete().eq('id', sala.id);
       const detalleRollback = errorRollback
         ? ' Tampoco se pudo revertir el registro de la sala.'
         : '';
@@ -89,8 +96,9 @@ export class Salas {
     };
   }
 
+  /** Cambia el nombre de una sala. */
   async actualizarNombreSala(id: number | string, nombre: string): Promise<SalaCreada> {
-    const { data, error } = await this.supabaseClient.client
+    const { data, error } = await this.clienteSupabase.cliente
       .from('salas')
       .update({ nombre })
       .eq('id', id)
@@ -107,8 +115,9 @@ export class Salas {
     };
   }
 
+  /** Elimina la sala junto con sus butacas. */
   async eliminarSalaConButacas(id: number | string): Promise<void> {
-    const { error } = await this.supabaseClient.client.rpc('eliminar_sala_con_butacas', {
+    const { error } = await this.clienteSupabase.cliente.rpc('eliminar_sala_con_butacas', {
       p_sala_id: String(id),
     });
 

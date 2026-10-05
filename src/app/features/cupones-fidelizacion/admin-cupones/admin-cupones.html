@@ -1,1 +1,413 @@
-<p>admin-cupones works!</p>
+<main class="promotions-admin">
+	<header class="page-heading">
+		<div>
+			<p class="eyebrow">Administración · Fidelización</p>
+			<h1>Cupones y combos</h1>
+		</div>
+		<span class="record-total">
+			{{ pestana() === 'cupones' ? cupones().length + ' cupones' : combos().length + ' combos' }}
+		</span>
+	</header>
+
+	@if (error(); as mensajeError) {
+		<p class="feedback error" role="alert">{{ mensajeError }}</p>
+	}
+	@if (mensaje(); as mensajeExito) {
+		<p class="feedback success" role="status">{{ mensajeExito }}</p>
+	}
+
+	<nav class="tabs" aria-label="Administración de promociones">
+		<button
+			type="button"
+			role="tab"
+			[attr.aria-selected]="pestana() === 'cupones'"
+			[class.active]="pestana() === 'cupones'"
+			(click)="cambiarPestana('cupones')"
+		>
+			Cupones <span>{{ cupones().length }}</span>
+		</button>
+		<button
+			type="button"
+			role="tab"
+			[attr.aria-selected]="pestana() === 'combos'"
+			[class.active]="pestana() === 'combos'"
+			(click)="cambiarPestana('combos')"
+		>
+			Combos <span>{{ combos().length }}</span>
+		</button>
+	</nav>
+
+	@if (cargando()) {
+		<p class="loading" aria-live="polite">Cargando promociones…</p>
+	} @else if (pestana() === 'cupones') {
+		<section class="workspace" aria-label="Gestión de cupones">
+			<div class="list-panel">
+				<div class="panel-heading">
+					<div>
+						<p class="eyebrow">Promociones</p>
+						<h2>Cupones existentes</h2>
+					</div>
+					<label class="search-field">
+						<span class="visually-hidden">Buscar cupones</span>
+						<input
+							type="search"
+							placeholder="Buscar cupón"
+							[ngModel]="filtroCupon()"
+							(ngModelChange)="filtroCupon.set($event)"
+							[ngModelOptions]="{ standalone: true }"
+						/>
+					</label>
+				</div>
+
+				<div class="table-frame">
+					<table>
+						<thead>
+							<tr>
+								<th>Código</th>
+								<th>Desc.</th>
+								<th>Segmento</th>
+								<th>Vigencia</th>
+								<th>Usos</th>
+								<th>Estado</th>
+								<th><span class="visually-hidden">Acciones</span></th>
+							</tr>
+						</thead>
+						<tbody>
+							@for (cupon of cuponesFiltrados(); track cupon.id) {
+								<tr [class.inactive-row]="!cupon.activo">
+									<th scope="row">
+										<span class="code-label">{{ cupon.codigo }}</span>
+										<small>{{ cupon.descripcion }}</small>
+									</th>
+									<td>{{ cupon.porcentaje_descuento }}%</td>
+									<td><span class="segment-label">{{ cupon.segmento }}</span></td>
+									<td>
+										<span>{{ cupon.fecha_inicio }}</span>
+										<small>{{ cupon.fecha_fin || 'Sin fin' }}</small>
+									</td>
+									<td>{{ cupon.usos_maximo ?? 'Sin límite' }}</td>
+									<td>
+										<label class="status-toggle">
+											<input
+												type="checkbox"
+												[checked]="cupon.activo"
+												[attr.aria-label]="(cupon.activo ? 'Desactivar ' : 'Activar ') + cupon.codigo"
+												(change)="cambiarEstadoCupon(cupon, $any($event.target).checked)"
+											/>
+											<span>{{ cupon.activo ? 'Activo' : 'Inactivo' }}</span>
+										</label>
+									</td>
+									<td class="actions-cell">
+										<button class="link-button" type="button" (click)="editarCupon(cupon)">Editar</button>
+										<button
+											class="icon-button"
+											type="button"
+											[attr.aria-label]="'Eliminar cupón ' + cupon.codigo"
+											title="Eliminar cupón"
+											(click)="eliminarCupon(cupon)"
+										>×</button>
+									</td>
+								</tr>
+							} @empty {
+								<tr>
+									<td class="empty-cell" colspan="7">
+										{{ cupones().length ? 'No hay cupones para esa búsqueda.' : 'Todavía no hay cupones.' }}
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<section class="form-panel" aria-labelledby="coupon-form-title">
+				<div class="panel-heading form-title">
+					<div>
+						<p class="eyebrow">{{ idCuponEnEdicion() ? 'Editar promoción' : 'Nueva promoción' }}</p>
+						<h2 id="coupon-form-title">{{ idCuponEnEdicion() ? 'Editar cupón' : 'Nuevo cupón' }}</h2>
+					</div>
+					@if (idCuponEnEdicion()) {
+						<button class="link-button" type="button" (click)="nuevoCupon()">Cancelar</button>
+					}
+				</div>
+
+				<form (ngSubmit)="guardarCupon()">
+					<label class="field">
+						<span>Código</span>
+						<input
+							name="codigo"
+							type="text"
+							maxlength="60"
+							required
+							placeholder="Ej. BIENVENIDA"
+							[(ngModel)]="formularioCupon.codigo"
+						/>
+					</label>
+
+					<label class="field">
+						<span>Descripción</span>
+						<input
+							name="descripcion"
+							type="text"
+							maxlength="200"
+							required
+							placeholder="Para qué es este cupón"
+							[(ngModel)]="formularioCupon.descripcion"
+						/>
+					</label>
+
+					<div class="form-grid two-columns">
+						<label class="field">
+							<span>% Descuento</span>
+							<input
+								name="porcentaje_descuento"
+								type="number"
+								min="0.01"
+								max="100"
+								step="0.01"
+								required
+								[(ngModel)]="formularioCupon.porcentaje_descuento"
+							/>
+						</label>
+						<label class="field">
+							<span>Usos máximos</span>
+							<input
+								name="usos_maximo"
+								type="number"
+								min="1"
+								step="1"
+								placeholder="Sin límite"
+								[(ngModel)]="formularioCupon.usos_maximo"
+							/>
+						</label>
+					</div>
+
+					<label class="field">
+						<span>Segmento <small>Podés elegir uno existente o escribir uno nuevo</small></span>
+						<input
+							name="segmento"
+							type="text"
+							maxlength="100"
+							list="segmentos-cupon"
+							required
+							placeholder="Todos, primera compra, mayores de 50…"
+							[(ngModel)]="formularioCupon.segmento"
+						/>
+						<datalist id="segmentos-cupon">
+							@for (segmento of segmentos(); track segmento) {
+								<option [value]="segmento"></option>
+							}
+						</datalist>
+					</label>
+
+					<div class="form-grid two-columns">
+						<label class="field">
+							<span>Fecha de inicio</span>
+							<input name="fecha_inicio" type="date" required [(ngModel)]="formularioCupon.fecha_inicio" />
+						</label>
+						<label class="field">
+							<span>Fecha de fin <small>Opcional</small></span>
+							<input name="fecha_fin" type="date" [(ngModel)]="formularioCupon.fecha_fin" />
+						</label>
+					</div>
+
+					<label class="form-check">
+						<input name="cupon_activo" type="checkbox" [(ngModel)]="formularioCupon.activo" />
+						<span>El cupón está activo</span>
+					</label>
+
+					<button class="primary-button full-width" type="submit" [disabled]="guardando()">
+						{{ guardando() ? 'Guardando…' : idCuponEnEdicion() ? 'Guardar cambios' : 'Crear cupón' }}
+					</button>
+				</form>
+			</section>
+		</section>
+	} @else {
+		<section class="workspace" aria-label="Gestión de combos">
+			<div class="list-panel">
+				<div class="panel-heading">
+					<div>
+						<p class="eyebrow">Promociones agrupadas</p>
+						<h2>Combos existentes</h2>
+					</div>
+					<label class="search-field">
+						<span class="visually-hidden">Buscar combos</span>
+						<input
+							type="search"
+							placeholder="Buscar combo"
+							[ngModel]="filtroCombo()"
+							(ngModelChange)="filtroCombo.set($event)"
+							[ngModelOptions]="{ standalone: true }"
+						/>
+					</label>
+				</div>
+
+				<div class="table-frame">
+					<table>
+						<thead>
+							<tr>
+								<th>Combo</th>
+								<th>Precio</th>
+								<th>Incluye</th>
+								<th>Estado</th>
+								<th><span class="visually-hidden">Acciones</span></th>
+							</tr>
+						</thead>
+						<tbody>
+							@for (combo of combosFiltrados(); track combo.id) {
+								<tr [class.inactive-row]="!combo.activo">
+									<th scope="row">
+										<span class="code-label">{{ combo.nombre }}</span>
+										<small>
+											@for (elemento of combo.productosDetalle; track elemento.producto_id; let ultimo = $last) {
+												{{ elemento.cantidad }} {{ elemento.nombre }}{{ ultimo ? '' : ' + ' }}
+											}
+											@if (combo.incluye_entrada) {
+												{{ combo.productosDetalle.length ? ' + ' : '' }}Entrada
+											}
+											@if (!combo.productosDetalle.length && !combo.incluye_entrada) { Sin componentes }
+										</small>
+									</th>
+									<td>{{ formatearPrecio(combo.precio_fijo) }}</td>
+									<td>
+										<span class="segment-label">
+											{{ combo.incluye_entrada ? 'Entrada incluida' : combo.productosDetalle.length + ' productos' }}
+										</span>
+									</td>
+									<td>
+										<label class="status-toggle">
+											<input
+												type="checkbox"
+												[checked]="combo.activo"
+												[attr.aria-label]="(combo.activo ? 'Desactivar ' : 'Activar ') + combo.nombre"
+												(change)="cambiarEstadoCombo(combo, $any($event.target).checked)"
+											/>
+											<span>{{ combo.activo ? 'Activo' : 'Inactivo' }}</span>
+										</label>
+									</td>
+									<td class="actions-cell">
+										<button class="link-button" type="button" (click)="editarCombo(combo)">Editar</button>
+										<button
+											class="icon-button"
+											type="button"
+											[attr.aria-label]="'Eliminar combo ' + combo.nombre"
+											title="Eliminar combo"
+											(click)="eliminarCombo(combo)"
+										>×</button>
+									</td>
+								</tr>
+							} @empty {
+								<tr>
+									<td class="empty-cell" colspan="5">
+										{{ combos().length ? 'No hay combos para esa búsqueda.' : 'Todavía no hay combos.' }}
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<section class="form-panel combo-form-panel" aria-labelledby="combo-form-title">
+				<div class="panel-heading form-title">
+					<div>
+						<p class="eyebrow">{{ idComboEnEdicion() ? 'Editar promoción' : 'Nueva promoción' }}</p>
+						<h2 id="combo-form-title">{{ idComboEnEdicion() ? 'Editar combo' : 'Nuevo combo' }}</h2>
+					</div>
+					@if (idComboEnEdicion()) {
+						<button class="link-button" type="button" (click)="nuevoCombo()">Cancelar</button>
+					}
+				</div>
+
+				<form (ngSubmit)="guardarCombo()">
+					<label class="field">
+						<span>Nombre</span>
+						<input
+							name="combo_nombre"
+							type="text"
+							maxlength="150"
+							required
+							placeholder="Ej. Combo Duo"
+							[(ngModel)]="formularioCombo.nombre"
+						/>
+					</label>
+
+					<label class="form-check">
+						<input name="incluye_entrada" type="checkbox" [(ngModel)]="formularioCombo.incluye_entrada" />
+						<span>Incluye una entrada</span>
+					</label>
+
+					<fieldset class="combo-items">
+						<legend>Productos que lo componen</legend>
+						@for (elemento of formularioCombo.productos; track $index; let indice = $index) {
+							<div class="combo-item-row">
+								<label class="visually-hidden" [for]="'combo-producto-' + indice">Producto</label>
+								<select
+									[id]="'combo-producto-' + indice"
+									[name]="'combo_producto_' + indice"
+									required
+									[ngModel]="elemento.producto_id"
+									(ngModelChange)="cambiarProductoCombo(indice, $event)"
+								>
+									@for (producto of productosActivos(); track producto.id) {
+										<option [value]="producto.id">
+											{{ producto.nombre }} · {{ formatearPrecio(producto.precio) }}
+										</option>
+									}
+								</select>
+								<label class="visually-hidden" [for]="'combo-cantidad-' + indice">Cantidad</label>
+								<input
+									[id]="'combo-cantidad-' + indice"
+									[name]="'combo_cantidad_' + indice"
+									type="number"
+									min="1"
+									step="1"
+									required
+									[(ngModel)]="elemento.cantidad"
+								/>
+								<button
+									class="icon-button remove-item"
+									type="button"
+									[attr.aria-label]="'Quitar producto del combo, fila ' + (indice + 1)"
+									(click)="quitarProductoCombo(indice)"
+								>×</button>
+							</div>
+						} @empty {
+							<p class="empty-items">Agregá productos o marcá que incluye una entrada.</p>
+						}
+						<button
+							class="add-item-button"
+							type="button"
+							[disabled]="productosActivos().length === 0"
+							(click)="agregarProductoCombo()"
+						>
+							<span aria-hidden="true">＋</span> Agregar producto
+						</button>
+					</fieldset>
+
+					<div class="form-grid two-columns combo-bottom-fields">
+						<label class="field">
+							<span>Precio fijo del combo (ARS)</span>
+							<input
+								name="precio_fijo"
+								type="number"
+								min="0"
+								step="0.01"
+								required
+								[(ngModel)]="formularioCombo.precio_fijo"
+							/>
+						</label>
+						<label class="form-check combo-active">
+							<input name="combo_activo" type="checkbox" [(ngModel)]="formularioCombo.activo" />
+							<span>Combo activo</span>
+						</label>
+					</div>
+
+					<button class="primary-button full-width" type="submit" [disabled]="guardando()">
+						{{ guardando() ? 'Guardando…' : idComboEnEdicion() ? 'Guardar cambios' : 'Crear combo' }}
+					</button>
+				</form>
+			</section>
+		</section>
+	}
+</main>

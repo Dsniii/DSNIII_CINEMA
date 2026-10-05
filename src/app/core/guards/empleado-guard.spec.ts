@@ -2,50 +2,50 @@ import { signal, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CanActivateFn, Router, provideRouter } from '@angular/router';
 import { empleadoGuard } from './empleado-guard';
-import { Auth, type PerfilActual } from '../services/auth';
+import { Autenticacion, type PerfilActual } from '../services/auth';
 
 describe('empleadoGuard', () => {
-  const executeGuard: CanActivateFn = (...guardParameters) =>
-    TestBed.runInInjectionContext(() => empleadoGuard(...guardParameters));
+  const executeGuard: CanActivateFn = (...parametrosGuard) =>
+    TestBed.runInInjectionContext(() => empleadoGuard(...parametrosGuard));
 
-  let auth: {
-    getUser: () => Promise<{ data: { user: object | null }; error: null }>;
+  let autenticacion: {
+    obtenerUsuario: () => Promise<{ data: { user: object | null }; error: null }>;
     sincronizarPerfil: () => Promise<void>;
   };
   let perfilActual: WritableSignal<PerfilActual | null>;
 
   beforeEach(() => {
     perfilActual = signal<PerfilActual | null>({ nombre: 'Usuario', rol: 'cliente' });
-    auth = {
-      getUser: async () => ({ data: { user: {} }, error: null }),
+    autenticacion = {
+      obtenerUsuario: async () => ({ data: { user: {} }, error: null }),
       sincronizarPerfil: async () => undefined,
     };
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: Auth, useValue: { ...auth, perfilActual } },
+        { provide: Autenticacion, useValue: { ...autenticacion, perfilActual } },
         provideRouter([]),
       ],
     });
   });
 
-  it('should be created', () => {
+  it('debería crearse', () => {
     expect(executeGuard).toBeTruthy();
   });
 
-  it('should deny non employee users', async () => {
-    const router = TestBed.inject(Router);
-    const result = await executeGuard({} as any, {} as any);
+  it('debería denegar a usuarios que no son empleados', async () => {
+    const enrutador = TestBed.inject(Router);
+    const resultado = await executeGuard({} as any, {} as any);
 
-    expect(result).toEqual(router.createUrlTree(['/']));
+    expect(resultado).toEqual(enrutador.createUrlTree(['/']));
   });
 
-  it('should allow employees and deny admins', async () => {
+  it('debería permitir empleados y denegar admins', async () => {
     perfilActual.set({ nombre: 'Empleado', rol: 'empleado' });
     expect(await executeGuard({} as any, {} as any)).toBe(true);
 
     perfilActual.set({ nombre: 'Admin', rol: 'admin' });
-    const router = TestBed.inject(Router);
-    expect(await executeGuard({} as any, {} as any)).toEqual(router.createUrlTree(['/']));
+    const enrutador = TestBed.inject(Router);
+    expect(await executeGuard({} as any, {} as any)).toEqual(enrutador.createUrlTree(['/']));
   });
 });
