@@ -12,8 +12,7 @@ export interface PerfilActual {
 @Injectable({ providedIn: 'root' })
 export class Autenticacion {
   private readonly supabase: SupabaseSdkClient;
-  /** Perfil del usuario con sesión, o 
-ull si no hay sesión. */
+  /** Perfil del usuario con sesión, o `null` si no hay sesión. */
   readonly perfilActual = signal<PerfilActual | null>(null);
 
   constructor(clienteSupabase: ClienteSupabase) {
@@ -71,8 +70,7 @@ ull si no hay sesión. */
     await this.cargarPerfil(data.user);
   }
 
-  /** Devuelve el rol del usuario (cliente, empleado o admin) o 
-ull si no es válido. */
+  /** Devuelve el rol del usuario (cliente, empleado o admin) o `null` si no es válido. */
   async obtenerRol(): Promise<string | null> {
     const { data, error } = await this.supabase.rpc('rol_actual');
 
