@@ -1,1 +1,93 @@
-<p>mis-puntos works!</p>
+<main class="mis-puntos">
+	<header class="page-header">
+		<p class="eyebrow">Fidelización</p>
+		<h1>Mis puntos</h1>
+	</header>
+
+	@if (error(); as mensajeError) {
+		<div class="feedback error" role="alert">
+			<p>{{ mensajeError }}</p>
+			<button class="primary-button" type="button" (click)="cargar()">Reintentar</button>
+		</div>
+	} @else if (cargando()) {
+		<p class="list-message" role="status" aria-live="polite">Cargando tus puntos…</p>
+	} @else {
+		<section class="balance" aria-labelledby="balance-title">
+			<div>
+				<p class="eyebrow">Saldo actual</p>
+				<h2 id="balance-title" class="visually-hidden">Puntos acumulados</h2>
+				<p class="balance-value">{{ puntosTexto() }} <span>puntos</span></p>
+				<p class="balance-hint">Ganás 1 punto por cada peso que gastás en tus compras.</p>
+			</div>
+			<p class="balance-available">
+				<strong>{{ cantidadAlcanzables() }}</strong>
+				{{ cantidadAlcanzables() === 1 ? 'recompensa disponible' : 'recompensas disponibles' }}
+			</p>
+		</section>
+
+		@if (errorCanje(); as mensajeCanje) {
+			<div class="feedback error" role="alert">
+				<p>{{ mensajeCanje }}</p>
+			</div>
+		}
+
+		<section class="rewards" aria-labelledby="rewards-title">
+			<div class="section-label-row">
+				<h2 id="rewards-title" class="section-label">Recompensas</h2>
+				<span class="count">{{ recompensasVista().length }}</span>
+			</div>
+
+			<div class="reward-grid">
+				@for (r of recompensasVista(); track r.id) {
+					<article class="reward-card" [class.locked]="!r.alcanzable">
+						<div class="reward-image">
+							@if (r.imagen) {
+								<img [src]="r.imagen" [alt]="r.nombre" />
+							} @else {
+								<span class="image-placeholder" aria-hidden="true">{{ r.categoria }}</span>
+							}
+						</div>
+						<div class="reward-info">
+							<div class="reward-copy">
+								<h3>{{ r.nombre }}</h3>
+								<p>
+									{{ r.categoria }}
+									@if (r.precioTexto) {
+										<span>·</span> {{ r.precioTexto }}
+									}
+								</p>
+							</div>
+							<p class="reward-cost">{{ r.costoTexto }} <span>puntos</span></p>
+							<div
+								class="progress"
+								role="progressbar"
+								aria-valuemin="0"
+								aria-valuemax="100"
+								[attr.aria-valuenow]="r.progreso"
+								[attr.aria-label]="'Progreso hacia ' + r.nombre"
+							>
+								<span [style.width.%]="r.progreso"></span>
+							</div>
+							<p class="reward-status" [class.ready]="r.alcanzable">{{ r.estado }}</p>
+							@if (r.alcanzable) {
+								<button
+									class="primary-button reward-action"
+									type="button"
+									[disabled]="canjeandoId() === r.id"
+									(click)="onCanjear(r.id)"
+								>
+									{{ canjeandoId() === r.id ? 'Canjeando…' : 'Canjear' }}
+								</button>
+							}
+						</div>
+					</article>
+				} @empty {
+					<div class="empty-rewards">
+						<h3>Todavía no hay recompensas</h3>
+						<p>Cuando el cine cargue recompensas, las vas a ver acá.</p>
+					</div>
+				}
+			</div>
+		</section>
+	}
+</main>

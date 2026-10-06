@@ -1,1 +1,54 @@
-<p>datos-personales works!</p>
+<main class="datos-personales">
+	<header class="page-header">
+		<p class="eyebrow">Mi perfil</p>
+		<h1>Datos personales</h1>
+	</header>
+
+	@if (error(); as mensajeError) {
+		<div class="feedback error" role="alert">
+			<p>{{ mensajeError }}</p>
+			<button class="primary-button" type="button" (click)="cargar()">Reintentar</button>
+		</div>
+	} @else if (cargando()) {
+		<p class="list-message" role="status" aria-live="polite">Cargando tus datos…</p>
+	} @else if (perfil(); as p) {
+		<section class="panel" aria-label="Datos de tu perfil">
+			<dl class="data-list">
+				<div class="data-item">
+					<dt>Nombre</dt>
+					<dd>{{ p.nombre }}</dd>
+				</div>
+				<div class="data-item">
+					<dt>Apellido</dt>
+					<dd>{{ p.apellido }}</dd>
+				</div>
+				<div class="data-item">
+					<dt>Fecha de nacimiento</dt>
+					<dd>{{ fechaNacimiento() | date: 'dd/MM/yyyy' }}</dd>
+				</div>
+				<div class="data-item">
+					<dt>Tipo de sangre</dt>
+					<dd>{{ p.tipo_sangre }}</dd>
+				</div>
+				<div class="data-item">
+					<dt>Color de ojos</dt>
+					<dd>{{ p.color_ojos }}</dd>
+				</div>
+				<div class="data-item data-item--rol">
+					<dt>Rol</dt>
+					<dd>{{ p.rol }}</dd>
+				</div>
+				<div class="data-item">
+					<dt>Crédito disponible</dt>
+					<dd class="data-credito">{{ creditoFormateado() }}</dd>
+				</div>
+				<div class="data-item">
+					<dt>Cuenta creada el</dt>
+					<dd>{{ p.creado_en | date: 'dd/MM/yyyy' }}</dd>
+				</div>
+			</dl>
+		</section>
+	} @else {
+		<p class="list-message">Todavía no hay datos cargados en tu perfil.</p>
+	}
+</main>

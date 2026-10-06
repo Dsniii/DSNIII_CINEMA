@@ -20,10 +20,17 @@ export class Registro {
   mensajeError = '';
   mensajeExito = '';
 
+  /** Opciones del combobox de tipo de sangre. */
+  readonly tiposSangre = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+  /** Opciones del combobox de color de ojos. */
+  readonly coloresOjos = ['Marrón', 'Negro', 'Azul', 'Verde', 'Gris', 'Avellana', 'Ámbar'];
+
   formularioRegistro = this.constructorFormularios.group({
     nombre: ['', [Validators.required]],
     apellido: ['', [Validators.required]],
     fecha_nacimiento: ['', [Validators.required]],
+    tipo_sangre: ['', [Validators.required]],
+    color_ojos: ['', [Validators.required]],
     correo: ['', [Validators.required, Validators.email]],
     contrasena: ['', [Validators.required, Validators.minLength(6)]],
   });
@@ -42,6 +49,8 @@ export class Registro {
     const nombre = this.formularioRegistro.get('nombre')?.value?.trim() ?? '';
     const apellido = this.formularioRegistro.get('apellido')?.value?.trim() ?? '';
     const fecha_nacimiento = this.formularioRegistro.get('fecha_nacimiento')?.value ?? '';
+    const tipo_sangre = this.formularioRegistro.get('tipo_sangre')?.value ?? '';
+    const color_ojos = this.formularioRegistro.get('color_ojos')?.value ?? '';
     const correo = this.formularioRegistro.get('correo')?.value?.trim() ?? '';
     const contrasena = this.formularioRegistro.get('contrasena')?.value ?? '';
 
@@ -50,6 +59,8 @@ export class Registro {
         nombre,
         apellido,
         fecha_nacimiento,
+        tipo_sangre,
+        color_ojos,
       });
 
       if (error) {

@@ -26,6 +26,22 @@
     </label>
 
     <label>
+      Tipo de sangre:
+      <select formControlName="tipo_sangre">
+        <option value="" disabled>Elegí un tipo</option>
+        <option *ngFor="let tipo of tiposSangre" [value]="tipo">{{ tipo }}</option>
+      </select>
+    </label>
+
+    <label>
+      Color de ojos:
+      <select formControlName="color_ojos">
+        <option value="" disabled>Elegí un color</option>
+        <option *ngFor="let color of coloresOjos" [value]="color">{{ color }}</option>
+      </select>
+    </label>
+
+    <label>
       Email:
       <input type="email" formControlName="correo" />
     </label>

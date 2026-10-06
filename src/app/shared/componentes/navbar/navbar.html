@@ -5,7 +5,6 @@
 	<nav class="nav-left" aria-label="Navegación principal">
 		<a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Cartelera</a>
 		<a routerLink="/proximamente" routerLinkActive="active">Próximamente</a>
-		<a routerLink="/candy" routerLinkActive="active">Candy</a>
 
 		@if (esEmpleado()) {
 			<a routerLink="/validacion-qr" routerLinkActive="active">Validar QR</a>
@@ -26,7 +25,7 @@
 	<nav class="nav-right" aria-label="Cuenta">
 		@if (estaLogueado()) {
 			@if (esCliente()) {
-				<a routerLink="/perfil" routerLinkActive="active">Mi perfil</a>
+				<a routerLink="/perfil/datos" routerLinkActive="active">Mi perfil</a>
 				<a routerLink="/fidelizacion/puntos" routerLinkActive="active">Mis puntos</a>
 			}
 

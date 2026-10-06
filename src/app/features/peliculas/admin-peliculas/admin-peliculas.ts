@@ -229,7 +229,7 @@ export class AdminPeliculas implements OnInit {
       nombre: '',
       sinopsis: '',
       imagen_path: '',
-      duracion_minutos: 90,
+      duracion_minutos: 0,
       restriccion_edad: 0,
       fecha_estreno: '',
       dias_preventa: 0,

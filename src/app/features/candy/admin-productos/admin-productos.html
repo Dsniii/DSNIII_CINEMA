@@ -16,6 +16,33 @@
 		<p class="feedback success" role="status">{{ mensajeExito }}</p>
 	}
 
+	<!-- Recompensa fija: siempre existe un solo registro, acá solo se edita su costo en puntos. -->
+	<section class="entrada-card" aria-labelledby="entrada-title">
+		<div>
+			<p class="eyebrow">Recompensa fija · Fidelización</p>
+			<h2 id="entrada-title">Entrada gratis</h2>
+			<p class="entrada-hint">Puntos necesarios para canjear una entrada. No se puede crear otra, solo cambiar este costo.</p>
+		</div>
+		<form class="entrada-form" (ngSubmit)="guardarCostoEntrada()">
+			<label class="field field-entrada">
+				<span>Costo en puntos</span>
+				<input
+					name="costo_puntos_entrada"
+					type="number"
+					min="1"
+					step="1"
+					required
+					[ngModel]="costoPuntosEntrada()"
+					(ngModelChange)="costoPuntosEntrada.set($event)"
+					[ngModelOptions]="{ standalone: true }"
+				/>
+			</label>
+			<button class="primary-button" type="submit" [disabled]="guardandoEntrada()">
+				{{ guardandoEntrada() ? 'Guardando…' : 'Guardar' }}
+			</button>
+		</form>
+	</section>
+
 	<section class="catalog" aria-label="Catálogo de productos">
 		<aside class="categories" aria-label="Categorías de productos">
 			<div class="section-label-row">
@@ -197,6 +224,18 @@
 					step="0.01"
 					required
 					[(ngModel)]="formulario.precio"
+				/>
+			</label>
+
+			<label class="field field-points">
+				<span>Puntos para canjear (opcional)</span>
+				<input
+					name="costo_puntos"
+					type="number"
+					min="0"
+					step="1"
+					placeholder="Sin canje por puntos"
+					[(ngModel)]="formulario.costo_puntos"
 				/>
 			</label>
 

@@ -1,0 +1,382 @@
+:host {
+	display: block;
+	min-height: 100%;
+	color: #f2f1ed;
+	background: #111211;
+}
+
+.mis-puntos {
+	--surface: #171817;
+	--surface-raised: #1d1e1d;
+	--line: #343634;
+	--muted: #969995;
+	--ink: #fbfbfb;
+	--accent: #f5c451;
+	--accent-soft: #29251a;
+	min-height: calc(100vh - 40px);
+	padding: 24px;
+	border: 1px solid #303030;
+	color: var(--ink);
+	background: #111211;
+}
+
+.page-header,
+.balance,
+.rewards,
+.feedback {
+	width: min(1440px, 100%);
+	margin-inline: auto;
+}
+
+.page-header {
+	margin-bottom: 26px;
+}
+
+.eyebrow {
+	margin: 0 0 6px;
+	color: var(--accent);
+	font-size: 10px;
+	font-weight: 750;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+	margin-top: 0;
+}
+
+h1 {
+	margin-bottom: 0;
+	font-size: 34px;
+	line-height: 1.15;
+}
+
+/* Saldo: mismo bloque destacado que "Entrada gratis" en el admin de candy. */
+.balance {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 24px;
+	margin-bottom: 22px;
+	padding: 18px 20px;
+	border: 1px solid var(--accent);
+	background: var(--accent-soft);
+}
+
+.balance-value {
+	margin: 0 0 4px;
+	font-size: 44px;
+	font-weight: 750;
+	line-height: 1.1;
+	font-variant-numeric: tabular-nums;
+}
+
+.balance-value span {
+	color: var(--muted);
+	font-size: 16px;
+	font-weight: 650;
+}
+
+.balance-hint {
+	margin: 0;
+	color: var(--muted);
+	font-size: 12px;
+}
+
+.balance-available {
+	margin: 0;
+	color: var(--muted);
+	font-size: 12px;
+	text-align: right;
+}
+
+.balance-available strong {
+	display: block;
+	color: var(--accent);
+	font-size: 28px;
+	line-height: 1.1;
+}
+
+.rewards {
+	padding: 18px;
+	border: 1px solid var(--line);
+	background: var(--surface);
+}
+
+.section-label-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+	min-height: 25px;
+	margin-bottom: 14px;
+}
+
+.section-label {
+	margin: 0;
+	color: var(--muted);
+	font-size: 11px;
+	font-weight: 750;
+	letter-spacing: 0.9px;
+	text-transform: uppercase;
+}
+
+.count {
+	color: #a7aaa5;
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+}
+
+.reward-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	align-content: start;
+	gap: 14px;
+}
+
+.reward-card {
+	min-width: 0;
+	overflow: hidden;
+	border: 1px solid #353735;
+	background: var(--surface-raised);
+	transition: border-color 140ms ease;
+}
+
+.reward-card:hover {
+	border-color: #666963;
+}
+
+.reward-card.locked .reward-image {
+	opacity: 0.6;
+}
+
+.reward-image {
+	display: grid;
+	aspect-ratio: 1.7 / 1;
+	place-items: center;
+	overflow: hidden;
+	background: #0c0d0c;
+}
+
+.reward-image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.image-placeholder {
+	color: #6f726d;
+	font-size: 12px;
+}
+
+.reward-info {
+	display: grid;
+	gap: 10px;
+	padding: 12px;
+}
+
+.reward-copy h3 {
+	overflow: hidden;
+	margin: 0 0 3px;
+	font-size: 14px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.reward-copy p {
+	overflow: hidden;
+	margin: 0;
+	color: var(--muted);
+	font-size: 12px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.reward-cost {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 750;
+	font-variant-numeric: tabular-nums;
+}
+
+.reward-cost span {
+	color: var(--muted);
+	font-size: 12px;
+	font-weight: 650;
+}
+
+.progress {
+	height: 4px;
+	overflow: hidden;
+	background: #0c0d0c;
+}
+
+.progress span {
+	display: block;
+	height: 100%;
+	background: var(--accent);
+}
+
+.reward-status {
+	margin: 0;
+	color: var(--muted);
+	font-size: 12px;
+}
+
+.reward-status.ready {
+	color: var(--accent);
+	font-weight: 700;
+}
+
+.empty-rewards {
+	grid-column: 1 / -1;
+	display: grid;
+	min-height: 210px;
+	place-content: center;
+	justify-items: center;
+	padding: 24px;
+	color: var(--muted);
+	text-align: center;
+}
+
+.empty-rewards h3 {
+	margin: 0 0 5px;
+	color: var(--ink);
+	font-size: 14px;
+}
+
+.empty-rewards p,
+.list-message {
+	margin: 0;
+	font-size: 12px;
+}
+
+.list-message {
+	padding: 30px 12px;
+	color: var(--muted);
+}
+
+.feedback {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 14px;
+	margin-bottom: 14px;
+	padding: 10px 12px;
+	border: 1px solid;
+	font-size: 12px;
+}
+
+.feedback p {
+	margin: 0;
+}
+
+.feedback.error {
+	border-color: #74413b;
+	color: #f0a094;
+	background: #281a18;
+}
+
+.primary-button {
+	display: inline-flex;
+	min-height: 34px;
+	align-items: center;
+	justify-content: center;
+	gap: 7px;
+	padding: 8px 12px;
+	border: 0;
+	color: #101820;
+	background: var(--accent);
+	font: inherit;
+	font-size: 13px;
+	font-weight: 700;
+	cursor: pointer;
+	transition: background 140ms ease, transform 140ms ease;
+}
+
+.primary-button:hover {
+	background: #e6b743;
+	transform: translateY(-1px);
+}
+
+.primary-button:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+.primary-button:disabled {
+	cursor: not-allowed;
+	opacity: 0.6;
+	transform: none;
+}
+
+.reward-action {
+	width: 100%;
+	margin-top: 2px;
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	clip-path: inset(50%);
+}
+
+@media (max-width: 1050px) {
+	.reward-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 680px) {
+	.mis-puntos {
+		min-height: calc(100vh - 20px);
+		margin: 10px;
+		padding: 18px 14px;
+	}
+
+	h1 {
+		font-size: 25px;
+	}
+
+	.balance {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 14px;
+	}
+
+	.balance-value {
+		font-size: 36px;
+	}
+
+	.balance-available {
+		text-align: left;
+	}
+
+	.reward-grid {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 10px;
+	}
+
+	.feedback {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.primary-button,
+	.reward-card {
+		transition: none;
+	}
+
+	.primary-button:hover {
+		transform: none;
+	}
+}
