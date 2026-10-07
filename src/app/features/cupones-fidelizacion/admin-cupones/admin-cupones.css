@@ -1,3 +1,4 @@
+/* Estilos base del componente y superficie principal de administración. */
 :host {
 	display: block;
 	min-height: 100%;
@@ -5,6 +6,7 @@
 	background: #111211;
 }
 
+/* Paleta y dimensiones generales de la pantalla. */
 .promotions-admin {
 	--ink: #f0f0ed;
 	--muted: #929590;
@@ -22,6 +24,7 @@
 	background: #151615;
 }
 
+/* Encabezados de página y paneles. */
 .page-heading,
 .panel-heading {
 	display: flex;
@@ -68,6 +71,7 @@ h2 {
 	font-variant-numeric: tabular-nums;
 }
 
+/* Navegación entre secciones mediante pestañas. */
 .tabs {
 	display: flex;
 	gap: 16px;
@@ -103,6 +107,7 @@ h2 {
 	color: #a9d1ff;
 }
 
+/* Distribución de la lista y el formulario en el área de trabajo. */
 .workspace {
 	display: grid;
 	grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.9fr);
@@ -117,6 +122,7 @@ h2 {
 	background: var(--surface);
 }
 
+/* Encabezado y campo de búsqueda de cada panel. */
 .panel-heading {
 	margin-bottom: 14px;
 }
@@ -129,6 +135,7 @@ h2 {
 	width: min(200px, 42%);
 }
 
+/* Campos de entrada y estados de foco compartidos. */
 .search-field input,
 .field input,
 .combo-item-row select,
@@ -157,6 +164,7 @@ h2 {
 	box-shadow: 0 0 0 3px rgb(121 183 255 / 12%);
 }
 
+/* Tabla de cupones: contenedor, estructura y tipografía. */
 .table-frame {
 	overflow-x: auto;
 	border: 1px solid #343634;
@@ -198,6 +206,7 @@ tbody td {
 	font-size: 12px;
 }
 
+/* Texto secundario y etiquetas de los registros. */
 tbody th small,
 tbody td small {
 	display: block;
@@ -215,6 +224,7 @@ tbody td small {
 	white-space: nowrap;
 }
 
+/* Indicadores de segmento y estado de los registros. */
 .segment-label {
 	color: var(--blue);
 }
@@ -233,6 +243,7 @@ tbody td small {
 	cursor: pointer;
 }
 
+/* Controles de estado, acciones y botones de enlace. */
 .status-toggle input,
 .form-check input {
 	width: 15px;
@@ -275,6 +286,7 @@ tbody td small {
 	background: #342220;
 }
 
+/* Mensaje mostrado cuando la tabla no contiene registros. */
 .empty-cell {
 	padding: 30px 12px;
 	color: var(--muted);
@@ -282,6 +294,7 @@ tbody td small {
 	white-space: normal;
 }
 
+/* Estructura y disposición de los campos del formulario. */
 .form-title {
 	margin-bottom: 18px;
 }
@@ -321,6 +334,7 @@ tbody td small {
 	color-scheme: dark;
 }
 
+/* Casillas de verificación y botón principal del formulario. */
 .form-check {
 	min-height: 24px;
 	color: #d3d4d0;
@@ -357,6 +371,7 @@ tbody td small {
 	margin-top: 3px;
 }
 
+/* Lista editable de artículos incluida en los cupones combinados. */
 .combo-items {
 	display: grid;
 	min-width: 0;
@@ -388,6 +403,7 @@ tbody td small {
 	text-align: center;
 }
 
+/* Acciones para añadir o quitar artículos y estados vacíos/de carga. */
 .remove-item {
 	color: #a2a59f;
 }
@@ -419,6 +435,7 @@ tbody td small {
 	font-size: 11px;
 }
 
+/* Campos complementarios y estado de activación del cupón combinado. */
 .combo-bottom-fields {
 	align-items: end;
 }
@@ -427,6 +444,7 @@ tbody td small {
 	min-height: 39px;
 }
 
+/* Mensajes de resultado y estado de carga. */
 .feedback {
 	margin: 0 0 14px;
 	padding: 9px 11px;
@@ -450,6 +468,7 @@ tbody td small {
 	padding: 30px 0;
 }
 
+/* Texto accesible visualmente oculto, pero disponible para lectores de pantalla. */
 .visually-hidden {
 	position: absolute;
 	width: 1px;
@@ -460,6 +479,7 @@ tbody td small {
 	clip-path: inset(50%);
 }
 
+/* En pantallas medianas, apila la lista y el formulario. */
 @media (max-width: 980px) {
 	.workspace {
 		grid-template-columns: minmax(0, 1fr);
@@ -470,6 +490,7 @@ tbody td small {
 	}
 }
 
+/* Ajustes de espaciado y alineación para teléfonos. */
 @media (max-width: 620px) {
 	.promotions-admin {
 		width: calc(100% - 20px);

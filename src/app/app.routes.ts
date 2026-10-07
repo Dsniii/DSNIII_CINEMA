@@ -12,9 +12,9 @@ export const routes: Routes = [
     loadChildren: () => import('./auth.routes').then((m) => m.authRoutes),
   },
 
-  // ---------------------------------------------------------------
+
   // PÚBLICAS — cualquiera puede entrar, logueado o no
-  // ---------------------------------------------------------------
+
   {
     path: '',
     loadComponent: () =>
@@ -30,13 +30,13 @@ export const routes: Routes = [
     title: 'Próximamente',
   },
 
-  // ---------------------------------------------------------------
+
   // COMPRA — no requiere login (se puede comprar anónimo), pero
   // valida restricción de edad si la película la tiene.
   // El guard debe resolver funcionId -> pelicula.restriccion_edad
   // contra Supabase y comparar con la fecha_nacimiento del usuario
   // logueado (si no hay usuario logueado y la peli es +13/+18, redirige a login).
-  // ---------------------------------------------------------------
+
   {
     path: 'compra/:peliculaId/butacas',
     loadComponent: () =>
@@ -52,9 +52,9 @@ export const routes: Routes = [
     title: 'Finalizar compra',
   },
 
-  // ---------------------------------------------------------------
+
   // PERFIL — requiere estar logueado
-  // ---------------------------------------------------------------
+
   {
     path: 'perfil',
     canActivate: [authGuard],
@@ -70,9 +70,9 @@ export const routes: Routes = [
     ],
   },
 
-  // ---------------------------------------------------------------
+
   // FIDELIZACIÓN — requiere estar logueado (puntos son por usuario)
-  // ---------------------------------------------------------------
+
   {
     path: 'fidelizacion',
     canActivate: [authGuard],
@@ -86,9 +86,9 @@ export const routes: Routes = [
     ],
   },
 
-  // ---------------------------------------------------------------
+
   // VALIDACIÓN QR — solo empleados y admin
-  // ---------------------------------------------------------------
+
   {
     path: 'validacion-qr',
     canActivate: [empleadoGuard],
@@ -108,9 +108,9 @@ export const routes: Routes = [
     ],
   },
 
-  // ---------------------------------------------------------------
+
   // FUNCIONES Y CANDY ADMIN — admin y empleado (van antes de /admin, que es solo admin)
-  // ---------------------------------------------------------------
+
   {
     path: 'admin/funciones',
     canMatch: [personalGuard],
@@ -126,10 +126,10 @@ export const routes: Routes = [
       import('./features/candy/admin-productos/admin-productos').then((m) => m.AdminProductos),
   },
 
-  // ---------------------------------------------------------------
+
   // ADMIN — solo admin. canMatch evita descargar el chunk siquiera
   // si el usuario no es admin (mejor que canActivate para este caso).
-  // ---------------------------------------------------------------
+
   {
     path: 'admin',
     canMatch: [adminGuard],
@@ -185,9 +185,9 @@ export const routes: Routes = [
     ],
   },
 
-  // ---------------------------------------------------------------
+
   // 404 — siempre al final
-  // ---------------------------------------------------------------
+
   {
     path: '**',
     loadComponent: () =>
