@@ -24,26 +24,10 @@ export const routes: Routes = [
     title: 'Cartelera',
   },
   {
-    path: 'pelicula/:id',
-    loadComponent: () =>
-      import('./features/peliculas/detalle-pelicula/detalle-pelicula').then(
-        (m) => m.DetallePelicula,
-      ),
-    title: 'Detalle de película',
-  },
-  {
     path: 'proximamente',
     loadComponent: () =>
       import('./features/peliculas/proximamente/proximamente').then((m) => m.Proximamente),
     title: 'Próximamente',
-  },
-  {
-    path: 'candy',
-    loadComponent: () =>
-      import('./features/candy/listado-productos/listado-productos').then(
-        (m) => m.ListadoProductos,
-      ),
-    title: 'Candy bar',
   },
 
   // ---------------------------------------------------------------
@@ -67,14 +51,6 @@ export const routes: Routes = [
     loadComponent: () => import('./features/compra/checkout/checkout').then((m) => m.Pago),
     title: 'Finalizar compra',
   },
-  {
-    path: 'compra/confirmacion/:compraId',
-    loadComponent: () =>
-      import('./features/compra/confirmacion-entrada/confirmacion-entrada').then(
-        (m) => m.ConfirmacionEntrada,
-      ),
-    title: 'Tu entrada',
-  },
 
   // ---------------------------------------------------------------
   // PERFIL — requiere estar logueado
@@ -83,19 +59,7 @@ export const routes: Routes = [
     path: 'perfil',
     canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'mis-peliculas', pathMatch: 'full' },
-      {
-        path: 'mis-peliculas',
-        loadComponent: () =>
-          import('./features/perfil-usuario/mis-peliculas/mis-peliculas').then(
-            (m) => m.MisPeliculas,
-          ),
-      },
-      {
-        path: 'credito',
-        loadComponent: () =>
-          import('./features/perfil-usuario/mi-credito/mi-credito').then((m) => m.MiCredito),
-      },
+      { path: '', redirectTo: 'datos', pathMatch: 'full' },
       {
         path: 'datos',
         loadComponent: () =>
@@ -103,8 +67,6 @@ export const routes: Routes = [
             (m) => m.DatosPersonales,
           ),
       },
-
-      
     ],
   },
 
@@ -120,13 +82,6 @@ export const routes: Routes = [
         path: 'puntos',
         loadComponent: () =>
           import('./features/cupones-fidelizacion/mis-puntos/mis-puntos').then((m) => m.MisPuntos),
-      },
-      {
-        path: 'canjear',
-        loadComponent: () =>
-          import('./features/cupones-fidelizacion/canje-recompensas/canje-recompensas').then(
-            (m) => m.CanjeRecompensas,
-          ),
       },
     ],
   },
