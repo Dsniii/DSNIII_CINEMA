@@ -324,9 +324,46 @@
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 18px;
+  width: 100%;
   padding: 12px;
   border: 1px solid var(--line);
+  color: inherit;
   background: #202020;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.function-card:hover,
+.function-card.selected {
+  border-color: #f5c451;
+}
+
+.function-card.selected {
+  background: #292514;
+}
+
+.function-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.function-title {
+  color: #ddd;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.function-date {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.showtimes-hint {
+  margin: -4px 0 10px;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .function-card h3,
@@ -444,4 +481,78 @@
   .save-button {
     flex: 1;
   }
+}
+
+/* ---------- Ocupación en vivo ---------- */
+.occupancy {
+  margin-bottom: 16px;
+}
+
+.occupancy-title,
+.occupancy-hint {
+  margin: 0;
+  color: #bcbcbc;
+  font-size: 14px;
+}
+
+.occupancy-hint {
+  color: var(--muted);
+}
+
+.live {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border: 1px solid #555;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.live.on {
+  border-color: #00bd26;
+  color: #00bd26;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 8px 0 0;
+  padding: 0;
+  color: #bcbcbc;
+  font-size: 13px;
+  list-style: none;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  background: #080808;
+  border: 1px solid #555;
+}
+
+.dot.reservada {
+  background: #6b5410;
+  border-color: #f5c451;
+}
+
+.dot.vendida {
+  background: #6b1f1f;
+  border-color: #ff8b8b;
+}
+
+.seat-row .seat.reservada {
+  background: #6b5410;
+  color: #f5c451;
+}
+
+.seat-row .seat.vendida {
+  background: #6b1f1f;
+  color: #ffb4b4;
 }

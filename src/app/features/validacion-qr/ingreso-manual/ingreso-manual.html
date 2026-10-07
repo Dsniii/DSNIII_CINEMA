@@ -1,1 +1,35 @@
-<p>ingreso-manual works!</p>
+<main class="validacion">
+	<header class="encabezado">
+		<p class="eyebrow">Validación</p>
+		<h1>Ingreso manual</h1>
+		<a class="enlace" routerLink="/validacion-qr">Volver al escáner</a>
+	</header>
+
+	<div class="formulario">
+		<label for="codigo">Código de la entrada o del producto</label>
+		<input
+			#codigo
+			id="codigo"
+			type="text"
+			autocomplete="off"
+			autocapitalize="off"
+			spellcheck="false"
+			placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+			(keydown.enter)="validar(codigo)"
+		/>
+		<button class="boton principal" type="button" [disabled]="validando()" (click)="validar(codigo)">
+			{{ validando() ? 'Validando…' : 'Validar' }}
+		</button>
+	</div>
+
+	@if (resultado(); as r) {
+		<app-resultado-validacion [resultado]="r" />
+	}
+
+	@if (errorValidacion(); as mensaje) {
+		<div class="aviso error" role="alert">
+			<p class="titulo-error">Error al validar</p>
+			<p>{{ mensaje }}</p>
+		</div>
+	}
+</main>

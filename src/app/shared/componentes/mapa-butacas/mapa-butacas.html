@@ -1,1 +1,43 @@
-<p>mapa-butacas works!</p>
+<div class="mapa" role="group" aria-label="Mapa de butacas de la sala">
+  <div class="pantalla" aria-hidden="true">Pantalla</div>
+
+  @if (filas().length === 0) {
+    <p class="vacio">Esta sala todavía no tiene butacas cargadas.</p>
+  } @else {
+    <div class="sala">
+      @for (fila of filas(); track fila.numero) {
+        <div class="fila" role="group" [attr.aria-label]="'Fila ' + fila.letra">
+          <span class="fila-letra" aria-hidden="true">{{ fila.letra }}</span>
+          <div
+            class="asientos"
+            [style.grid-template-columns]="'repeat(' + columnasMaximas() + ', minmax(0, 1fr))'"
+          >
+            @for (butaca of fila.butacas; track butaca.id) {
+              <button
+                type="button"
+                class="asiento"
+                [style.grid-column]="'span ' + fila.ancho"
+                [attr.data-tipo]="butaca.tipo"
+                [attr.data-estado]="estado(butaca)"
+                [attr.aria-label]="descripcion(butaca)"
+                [attr.aria-pressed]="estado(butaca) === 'seleccionada'"
+                [title]="descripcion(butaca)"
+                [disabled]="estado(butaca) === 'ocupada'"
+                (click)="elegir(butaca)"
+              ></button>
+            }
+          </div>
+          <span class="fila-letra" aria-hidden="true">{{ fila.letra }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  <ul class="leyenda" aria-label="Referencias del mapa">
+    <li><span class="muestra" data-tipo="normal" data-estado="libre"></span>Normal</li>
+    <li><span class="muestra" data-tipo="vip" data-estado="libre"></span>VIP</li>
+    <li><span class="muestra" data-tipo="accesible" data-estado="libre"></span>Accesible</li>
+    <li><span class="muestra" data-tipo="normal" data-estado="seleccionada"></span>Elegida</li>
+    <li><span class="muestra" data-tipo="normal" data-estado="ocupada"></span>Ocupada</li>
+  </ul>
+</div>

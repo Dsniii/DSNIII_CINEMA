@@ -1,1 +1,318 @@
-<p>checkout works!</p>
+<main class="checkout">
+	<header class="page-header">
+		<p class="eyebrow">Compra</p>
+		<h1>Resumen de compra</h1>
+	</header>
+
+	@if (error(); as mensajeError) {
+		<div class="feedback error" role="alert">
+			<p>{{ mensajeError }}</p>
+			<button class="primary-button" type="button" (click)="cargar()">Reintentar</button>
+		</div>
+	} @else if (cargando()) {
+		<p class="list-message" role="status" aria-live="polite">Cargando productos…</p>
+	} @else if (resultado(); as r) {
+		<section class="success" aria-live="polite">
+			<p class="eyebrow">Compra confirmada</p>
+			<h2>¡Gracias por tu compra!</h2>
+			<dl class="totals">
+				<div>
+					<dt>Subtotal</dt>
+					<dd>{{ r.subtotal | monedaArs }}</dd>
+				</div>
+				@if (r.descuento_cupon > 0) {
+					<div class="credit">
+						<dt>Cupón {{ r.cupon_codigo }}</dt>
+						<dd>− {{ r.descuento_cupon | monedaArs }}</dd>
+					</div>
+				}
+				@if (r.credito_utilizado > 0) {
+					<div class="credit">
+						<dt>Crédito utilizado</dt>
+						<dd>− {{ r.credito_utilizado | monedaArs }}</dd>
+					</div>
+				}
+				@if (r.puntos_utilizados > 0) {
+					<div class="points">
+						<dt>Puntos utilizados</dt>
+						<dd>{{ r.puntos_utilizados }} pts</dd>
+					</div>
+				}
+				<div class="total">
+					<dt>Total pagado</dt>
+					<dd>{{ r.total | monedaArs }}</dd>
+				</div>
+				@if (r.puntos_ganados > 0) {
+					<div class="credit">
+						<dt>Puntos ganados</dt>
+						<dd>+ {{ r.puntos_ganados }} pts</dd>
+					</div>
+				}
+				<div>
+					<dt>Saldo de puntos</dt>
+					<dd>{{ r.puntos_restantes }} pts</dd>
+				</div>
+				<div>
+					<dt>Crédito restante</dt>
+					<dd>{{ r.credito_restante | monedaArs }}</dd>
+				</div>
+			</dl>
+			@if (errorConfirmacion(); as mensajePdf) {
+				<div class="feedback error" role="alert"><p>{{ mensajePdf }}</p></div>
+			}
+			<p class="list-message">Descargamos tus PDF con las entradas y el resumen de productos.</p>
+			<button class="primary-button" type="button" (click)="descargarPdfs()">Descargar PDF de nuevo</button>
+		</section>
+	} @else {
+		<section class="balance" aria-label="Tu saldo">
+			<div>
+				<p class="eyebrow">Tus puntos</p>
+				<p class="balance-value">{{ puntosRestantes() }} <span>pts disponibles</span></p>
+			</div>
+			<div>
+				<p class="eyebrow">Tu crédito</p>
+				<p class="balance-value">{{ creditoUsuario() | monedaArs }}</p>
+			</div>
+		</section>
+
+		@if (aviso(); as mensajeAviso) {
+			<div class="feedback warning" role="status">
+				<p>{{ mensajeAviso }}</p>
+			</div>
+		}
+
+		<div class="layout">
+			<section class="products" aria-labelledby="products-title">
+				<div class="section-label-row">
+					<h2 id="products-title" class="section-label">Productos disponibles</h2>
+					<span class="count">{{ catalogo().length }}</span>
+				</div>
+
+				@if (catalogo().length === 0) {
+					<p class="list-message">No hay productos disponibles por el momento.</p>
+				}
+
+				<div class="product-grid">
+					@for (c of catalogo(); track c.producto.id) {
+						<article class="product-card">
+							<div class="product-image">
+								@if (c.producto.imagen_path) {
+									<img [src]="c.producto.imagen_path" [alt]="c.producto.nombre" />
+								} @else {
+									<span class="image-placeholder" aria-hidden="true">Sin imagen</span>
+								}
+							</div>
+							<div class="product-info">
+								<h3>{{ c.producto.nombre }}</h3>
+								<p class="price">{{ c.producto.precio | monedaArs }}</p>
+								@if (c.recompensa; as r) {
+									<p class="points-tag">o {{ r.costo_puntos }} puntos</p>
+								}
+								<button class="primary-button" type="button" (click)="agregar(c.producto, c.recompensa)">
+									Agregar
+									@if (cantidadEnCarrito(c.producto.id) > 0) {
+										<span>({{ cantidadEnCarrito(c.producto.id) }})</span>
+									}
+								</button>
+							</div>
+						</article>
+					}
+				</div>
+			</section>
+
+			<aside class="cart" aria-labelledby="cart-title">
+				<div class="section-label-row">
+					<h2 id="cart-title" class="section-label">Tu carrito</h2>
+					<span class="count">{{ cantidadItems() }}</span>
+				</div>
+
+				@if (cantidadEntradas() > 0) {
+					<div class="cart-line fixed">
+						<span>
+							Entradas ({{ cantidadEntradas() }})
+							@if (entradasCanje() > 0) {
+								<small class="points-tag">{{ entradasCanje() }} gratis con puntos</small>
+							}
+						</span>
+						<strong>{{ totalEntradas() | monedaArs }}</strong>
+					</div>
+				}
+
+				@if (recompensaEntrada(); as re) {
+					<div class="cart-item">
+						<div class="cart-item-head">
+							<h3>{{ re.nombre }}</h3>
+							<span class="points-tag">{{ re.costo_puntos }} pts c/u</span>
+						</div>
+						@if (entradasComunes() > 0) {
+							<p class="coupon-desc">
+								Canjeá entradas comunes con puntos (no VIP). Elegiste {{ entradasComunes() }} común{{ entradasComunes() === 1 ? '' : 'es' }}.
+							</p>
+						} @else {
+							<p class="coupon-desc">
+								Solo se canjea por entradas comunes (no VIP). Elegí tus entradas en la selección de butacas para usarla.
+							</p>
+						}
+						<div class="cart-item-row">
+							<div class="qty">
+								<button type="button" [disabled]="entradasComunes() === 0" (click)="cambiarEntradasCanje(-1)" aria-label="Menos entradas gratis">−</button>
+								<span>{{ entradasCanje() }}</span>
+								<button type="button" [disabled]="entradasComunes() === 0" (click)="cambiarEntradasCanje(1)" aria-label="Más entradas gratis">+</button>
+							</div>
+							<strong>{{ re.costo_puntos * entradasCanje() }} pts</strong>
+						</div>
+					</div>
+				}
+
+				@if (carrito().length === 0) {
+					<p class="list-message">Todavía no agregaste productos.</p>
+				}
+
+				@for (item of carrito(); track item.producto.id) {
+					<div class="cart-item">
+						<div class="cart-item-head">
+							<h3>{{ item.producto.nombre }}</h3>
+							<button class="link-button" type="button" (click)="quitar(item)" [attr.aria-label]="'Quitar ' + item.producto.nombre">
+								Quitar
+							</button>
+						</div>
+
+						<div class="cart-item-row">
+							<div class="qty">
+								<button type="button" (click)="cambiarCantidad(item, -1)" aria-label="Menos">−</button>
+								<span>{{ item.cantidad }}</span>
+								<button type="button" (click)="cambiarCantidad(item, 1)" aria-label="Más">+</button>
+							</div>
+							<strong>
+								@if (item.metodoPago === 'puntos' && item.recompensa) {
+									{{ item.recompensa.costo_puntos * item.cantidad }} pts
+								} @else {
+									{{ item.producto.precio * item.cantidad | monedaArs }}
+								}
+							</strong>
+						</div>
+
+						<div class="pay-options" role="radiogroup" [attr.aria-label]="'Forma de pago de ' + item.producto.nombre">
+							<label>
+								<input
+									type="radio"
+									[name]="'pago-' + item.producto.id"
+									[checked]="item.metodoPago === 'dinero'"
+									(change)="cambiarMetodoPago(item, 'dinero')"
+								/>
+								Pagar con dinero
+							</label>
+							@if (item.recompensa; as r) {
+								<label>
+									<input
+										type="radio"
+										[name]="'pago-' + item.producto.id"
+										[checked]="item.metodoPago === 'puntos'"
+										(change)="cambiarMetodoPago(item, 'puntos')"
+									/>
+									Canjear con puntos ({{ r.costo_puntos }} c/u)
+								</label>
+							}
+						</div>
+					</div>
+				}
+
+				@if (subtotal() > 0) {
+					<div class="credit-box">
+						<label for="cupon-input">Cupón de descuento</label>
+						@if (cupon(); as c) {
+							<p class="coupon-applied">
+								<strong>{{ c.codigo }}</strong> · {{ c.porcentaje_descuento }}% de descuento
+								<button class="link-button" type="button" (click)="quitarCupon()">Quitar</button>
+							</p>
+							@if (c.descripcion) {
+								<p class="coupon-desc">{{ c.descripcion }}</p>
+							}
+						} @else {
+							<div class="credit-input">
+								<input
+									#cuponInput
+									id="cupon-input"
+									type="text"
+									class="coupon-field"
+									placeholder="Código"
+									autocomplete="off"
+									(keydown.enter)="aplicarCupon(cuponInput.value)"
+								/>
+								<button
+									class="primary-button"
+									type="button"
+									[disabled]="validandoCupon()"
+									(click)="aplicarCupon(cuponInput.value)"
+								>
+									{{ validandoCupon() ? 'Validando…' : 'Aplicar' }}
+								</button>
+							</div>
+						}
+						@if (errorCupon(); as mensajeCupon) {
+							<p class="coupon-error" role="alert">{{ mensajeCupon }}</p>
+						}
+					</div>
+				}
+
+				@if (creditoUsuario() > 0 && subtotalConDescuento() > 0) {
+					<div class="credit-box">
+						<label for="credito-input">Usar crédito</label>
+						<div class="credit-input">
+							<span>$</span>
+							<input
+								id="credito-input"
+								type="number"
+								min="0"
+								step="1"
+								[max]="creditoUsuario()"
+								[value]="creditoUsado()"
+								(change)="aplicarCredito($any($event.target).value)"
+							/>
+							<button class="link-button" type="button" (click)="usarTodoElCredito()">Usar todo</button>
+						</div>
+					</div>
+				}
+
+				<dl class="totals">
+					<div>
+						<dt>Subtotal</dt>
+						<dd>{{ subtotal() | monedaArs }}</dd>
+					</div>
+					@if (puntosAUsar() > 0) {
+						<div class="points">
+							<dt>Puntos a canjear</dt>
+							<dd>{{ puntosAUsar() }} pts</dd>
+						</div>
+					}
+					@if (descuentoCupon() > 0) {
+						<div class="credit">
+							<dt>Cupón {{ cupon()?.codigo }} ({{ cupon()?.porcentaje_descuento }}%)</dt>
+							<dd>− {{ descuentoCupon() | monedaArs }}</dd>
+						</div>
+					}
+					@if (creditoAplicado() > 0) {
+						<div class="credit">
+							<dt>Crédito aplicado</dt>
+							<dd>− {{ creditoAplicado() | monedaArs }}</dd>
+						</div>
+					}
+					<div class="total">
+						<dt>Total a pagar</dt>
+						<dd>{{ totalAPagar() | monedaArs }}</dd>
+					</div>
+				</dl>
+
+				@if (errorConfirmacion(); as mensajeConfirmacion) {
+					<p class="coupon-error" role="alert">{{ mensajeConfirmacion }}</p>
+				}
+				@if (!perfil()) {
+					<p class="coupon-error">Iniciá sesión para confirmar la compra.</p>
+				}
+				<button class="primary-button confirm" type="button" [disabled]="!puedeConfirmar()" (click)="confirmarCompra()">
+					{{ confirmando() ? 'Procesando…' : 'Confirmar compra' }}
+				</button>
+			</aside>
+		</div>
+	}
+</main>

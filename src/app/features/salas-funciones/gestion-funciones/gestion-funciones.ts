@@ -6,6 +6,7 @@ import { Funcion, FuncionInput, FormatoFuncion, IdiomaFuncion } from '../models/
 import { AsignadorSala, calcularHoraFin, SalaNoDisponibleError } from '../servicios/asignador-sala';
 import { Funciones } from '../servicios/funciones';
 import { SalaCreada, Salas } from '../servicios/salas';
+import { LogActividad } from '../../admin/servicios/log-actividad';
 
 /** Valores editables del formulario de función. */
 interface FormularioFuncion {
@@ -101,6 +102,7 @@ export class GestionFunciones implements OnInit {
     private readonly asignadorSala: AsignadorSala,
     private readonly servicioPeliculas: Peliculas,
     private readonly servicioSalas: Salas,
+    private readonly servicioLog: LogActividad,
   ) {}
 
   /** Horarios sugeridos para el formulario. */
@@ -140,14 +142,12 @@ export class GestionFunciones implements OnInit {
   readonly formulario: FormularioFuncion = this.formularioVacio();
 
   /** Películas activas, más la seleccionada aunque esté inactiva. */
-  readonly peliculasDisponibles = computed(() =>
+  readonly peliculasDisponibles = () =>
     this.peliculas().filter(
       (pelicula) => pelicula.activa || pelicula.id === this.formulario.pelicula_id,
-    ),
-  );
-  readonly peliculaSeleccionada = computed(() =>
-    this.peliculas().find((pelicula) => pelicula.id === this.formulario.pelicula_id),
-  );
+    );
+  readonly peliculaSeleccionada = () =>
+    this.peliculas().find((pelicula) => pelicula.id === this.formulario.pelicula_id);
   readonly funcionesFiltradas = computed(() => {
     const peliculaId = this.filtroPelicula();
     const fecha = this.filtroFecha();
@@ -158,7 +158,7 @@ export class GestionFunciones implements OnInit {
     );
   });
   /** Hora de fin estimada según la duración de la película ("--:--" si no se puede calcular). */
-  readonly vistaPreviaHoraFin = computed(() => {
+  readonly vistaPreviaHoraFin = () => {
     const duracion = this.peliculaSeleccionada()?.duracion_minutos;
     if (!duracion || !this.formulario.hora_inicio) {
       return '--:--';
@@ -169,14 +169,14 @@ export class GestionFunciones implements OnInit {
     } catch {
       return '--:--';
     }
-  });
+  };
   /** Fecha en que abre la preventa de la película seleccionada. */
-  readonly fechaInicioPreventa = computed(() => {
+  readonly fechaInicioPreventa = () => {
     const pelicula = this.peliculaSeleccionada();
     return pelicula ? sumarDias(pelicula.fecha_estreno, -pelicula.dias_preventa) : null;
-  });
+  };
   /** Indica si hoy está abierta la preventa de la película seleccionada. */
-  readonly preventaAbierta = computed(() => {
+  readonly preventaAbierta = () => {
     const pelicula = this.peliculaSeleccionada();
     if (!pelicula) {
       return false;
@@ -187,7 +187,7 @@ export class GestionFunciones implements OnInit {
       pelicula.fecha_estreno,
       pelicula.dias_preventa,
     );
-  });
+  };
 
   ngOnInit(): void {
     void this.cargarDatos();
@@ -277,6 +277,39 @@ export class GestionFunciones implements OnInit {
     this.mensaje.set(null);
   }
 
+  /** Describe una función para el detalle del log: película, fecha, horario y sala. */
+  private describirFuncion(funcion: Funcion, nombrePelicula: string): string {
+    const sala = this.salas().find((elemento) => elemento.id === funcion.sala_id)?.nombre ?? 'sala sin asignar';
+    return `"${nombrePelicula}" el ${funcion.fecha} ${funcion.hora_inicio.slice(0, 5)}–${funcion.hora_fin.slice(0, 5)} en ${sala} (${funcion.formato}, ${funcion.idioma})`;
+  }
+
+  /** Si cambió algún precio de la función, deja constancia de qué valores pasaron a cuáles. */
+  private async registrarCambioDePrecio(
+    anterior: Funcion,
+    nueva: Funcion,
+    nombrePelicula: string,
+  ): Promise<void> {
+    const formato = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 2 });
+    const cambios = [
+      { nombre: 'precio base', antes: anterior.precio_base, ahora: nueva.precio_base },
+      { nombre: 'precio VIP', antes: anterior.precio_vip, ahora: nueva.precio_vip },
+      { nombre: 'precio de preventa', antes: anterior.precio_preventa, ahora: nueva.precio_preventa },
+    ]
+      .filter((cambio) => Number(cambio.antes) !== Number(cambio.ahora))
+      .map((cambio) => `${cambio.nombre} ${formato.format(Number(cambio.antes))} → ${formato.format(Number(cambio.ahora))}`);
+
+    if (cambios.length === 0) {
+      return;
+    }
+
+    await this.servicioLog.registrar({
+      accion: 'modificar_precio_funcion',
+      entidad: 'funciones',
+      entidadId: nueva.id,
+      detalle: `Modificó el precio de la función ${this.describirFuncion(nueva, nombrePelicula)}: ${cambios.join(', ')}`,
+    });
+  }
+
   /** Valida y guarda la función (o una por fecha si es recurrente); la sala se asigna automáticamente. */
   async guardar(): Promise<void> {
     const pelicula = this.peliculaSeleccionada();
@@ -336,6 +369,7 @@ export class GestionFunciones implements OnInit {
     try {
       const id = this.idEnEdicion();
       const salaPreferidaId = this.formulario.sala_id || undefined;
+      const anterior = id ? this.funciones().find((elemento) => elemento.id === id) : undefined;
       const creadas: Funcion[] = [];
       const fallidas: string[] = [];
 
@@ -355,6 +389,17 @@ export class GestionFunciones implements OnInit {
                 salaPreferidaId,
               );
           creadas.push(funcion);
+
+          await this.servicioLog.registrar({
+            accion: id ? 'actualizar_funcion' : 'crear_funcion',
+            entidad: 'funciones',
+            entidadId: funcion.id,
+            detalle: `${id ? 'Actualizó la función' : 'Creó la función'} ${this.describirFuncion(funcion, nombrePelicula)}`,
+          });
+
+          if (anterior) {
+            await this.registrarCambioDePrecio(anterior, funcion, nombrePelicula);
+          }
         } catch (error) {
           if (error instanceof SalaNoDisponibleError) {
             fallidas.push(`${fecha}: ${error.message}`);
@@ -399,12 +444,22 @@ export class GestionFunciones implements OnInit {
       return;
     }
 
+    const nombrePelicula = this.nombrePelicula(funcion.pelicula_id);
+
     this.eliminandoId.set(funcion.id);
     this.error.set(null);
     this.mensaje.set(null);
 
     try {
       await this.servicioFunciones.eliminar(funcion.id);
+
+      await this.servicioLog.registrar({
+        accion: 'eliminar_funcion',
+        entidad: 'funciones',
+        entidadId: funcion.id,
+        detalle: `Eliminó la función ${this.describirFuncion(funcion, nombrePelicula)}`,
+      });
+
       this.funciones.update((funciones) => funciones.filter((elemento) => elemento.id !== funcion.id));
       this.mensaje.set('Función eliminada.');
     } catch (error) {

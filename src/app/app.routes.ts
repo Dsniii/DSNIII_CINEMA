@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
 import { adminGuard } from './core/guards/admin-guard';
+import { personalGuard } from './core/guards/personal-guard';
 import { empleadoGuard } from './core/guards/empleado-guard';
 import { edadMinimaGuard } from './core/guards/edad-minima-guard';
 
@@ -53,7 +54,7 @@ export const routes: Routes = [
   // logueado (si no hay usuario logueado y la peli es +13/+18, redirige a login).
   // ---------------------------------------------------------------
   {
-    path: 'compra/:funcionId/butacas',
+    path: 'compra/:peliculaId/butacas',
     loadComponent: () =>
       import('./features/compra/seleccion-butacas/seleccion-butacas').then(
         (m) => m.SeleccionButacas,
@@ -62,7 +63,7 @@ export const routes: Routes = [
     title: 'Elegir butacas',
   },
   {
-    path: 'compra/:funcionId/checkout',
+    path: 'compra/:peliculaId/checkout',
     loadComponent: () => import('./features/compra/checkout/checkout').then((m) => m.Pago),
     title: 'Finalizar compra',
   },
@@ -150,6 +151,24 @@ export const routes: Routes = [
           ),
       },
     ],
+  },
+
+  // ---------------------------------------------------------------
+  // FUNCIONES Y CANDY ADMIN — admin y empleado (van antes de /admin, que es solo admin)
+  // ---------------------------------------------------------------
+  {
+    path: 'admin/funciones',
+    canMatch: [personalGuard],
+    loadComponent: () =>
+      import('./features/salas-funciones/gestion-funciones/gestion-funciones').then(
+        (m) => m.GestionFunciones,
+      ),
+  },
+  {
+    path: 'admin/candy',
+    canMatch: [personalGuard],
+    loadComponent: () =>
+      import('./features/candy/admin-productos/admin-productos').then((m) => m.AdminProductos),
   },
 
   // ---------------------------------------------------------------

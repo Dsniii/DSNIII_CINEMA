@@ -1,1 +1,126 @@
-<p>log-actividad works!</p>
+<section class="actividad">
+  <header class="encabezado">
+    <div>
+      <p class="sobretitulo">Auditoría</p>
+      <h1>Actividad</h1>
+      <p class="descripcion">
+        Qué hizo cada usuario interno y cuándo: funciones creadas, cambios de precio y validaciones
+        de QR.
+      </p>
+    </div>
+    <button type="button" class="boton-secundario" [disabled]="cargando()" (click)="recargar()">
+      {{ cargando() ? 'Actualizando…' : 'Actualizar' }}
+    </button>
+  </header>
+
+  <form class="filtros" aria-label="Filtros de actividad" (submit)="$event.preventDefault()">
+    <label class="campo">
+      <span>Tipo</span>
+      <select #categoriaCampo [value]="categoria()" (change)="elegirCategoria(categoriaCampo.value)">
+        @for (opcion of categorias; track opcion.valor) {
+          <option [value]="opcion.valor" [selected]="opcion.valor === categoria()">
+            {{ opcion.etiqueta }}
+          </option>
+        }
+      </select>
+    </label>
+
+    <label class="campo">
+      <span>Usuario</span>
+      <select #usuarioCampo (change)="elegirUsuario(usuarioCampo.value)">
+        <option value="" [selected]="usuarioFiltro() === ''">Todos</option>
+        @for (usuario of usuarios(); track usuario.id) {
+          <option [value]="usuario.id" [selected]="usuario.id === usuarioFiltro()">
+            {{ usuario.nombre }} {{ usuario.apellido }} ({{ usuario.rol }})
+          </option>
+        }
+      </select>
+    </label>
+
+    <label class="campo">
+      <span>Desde</span>
+      <input #desdeCampo type="date" [value]="desde()" [max]="hasta() || null" (change)="elegirDesde(desdeCampo.value)" />
+    </label>
+
+    <label class="campo">
+      <span>Hasta</span>
+      <input #hastaCampo type="date" [value]="hasta()" [min]="desde() || null" (change)="elegirHasta(hastaCampo.value)" />
+    </label>
+
+    <label class="campo campo-texto">
+      <span>Buscar en el detalle</span>
+      <input
+        #textoCampo
+        type="search"
+        placeholder="Película, producto, butaca…"
+        [value]="texto()"
+        (keydown.enter)="buscarTexto(textoCampo.value)"
+        (change)="buscarTexto(textoCampo.value)"
+      />
+    </label>
+
+    @if (hayFiltros()) {
+      <button type="button" class="boton-enlace" (click)="limpiarFiltros()">Limpiar filtros</button>
+    }
+  </form>
+
+  @if (error()) {
+    <p class="mensaje-error" role="alert">{{ error() }}</p>
+  }
+
+  <p class="resumen" role="status">
+    @if (cargando()) {
+      Cargando actividad…
+    } @else {
+      {{ filas().length }} {{ filas().length === 1 ? 'registro' : 'registros' }}{{ hayMas() ? ' (hay más para cargar)' : '' }}
+    }
+  </p>
+
+  @if (!cargando() && filas().length === 0 && !error()) {
+    <p class="vacio">
+      {{ hayFiltros() ? 'No hay actividad que coincida con los filtros.' : 'Todavía no hay actividad registrada.' }}
+    </p>
+  } @else if (filas().length > 0) {
+    <div class="tabla-contenedor">
+      <table>
+        <caption class="solo-lectores">Actividad de los usuarios internos, de la más reciente a la más antigua</caption>
+        <thead>
+          <tr>
+            <th scope="col">Fecha y hora</th>
+            <th scope="col">Usuario</th>
+            <th scope="col">Acción</th>
+            <th scope="col">Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (fila of filas(); track fila.clave) {
+            <tr>
+              <td class="celda-fecha">
+                <span class="fecha">{{ fila.fecha }}</span>
+                <span class="hora">{{ fila.hora }}</span>
+              </td>
+              <td>
+                <span class="usuario">{{ fila.usuario }}</span>
+                @if (fila.rol) {
+                  <span class="rol">{{ fila.rol }}</span>
+                }
+              </td>
+              <td>
+                <span class="etiqueta" [attr.data-tono]="fila.accion.tono">{{ fila.accion.etiqueta }}</span>
+              </td>
+              <td class="detalle">{{ fila.detalle }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (hayMas()) {
+      <div class="pie">
+        <button type="button" class="boton-secundario" [disabled]="cargandoMas()" (click)="cargarMas()">
+          {{ cargandoMas() ? 'Cargando…' : 'Cargar más' }}
+        </button>
+      </div>
+    }
+  }
+</section>

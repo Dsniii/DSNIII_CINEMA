@@ -1,1 +1,43 @@
-<p>escaner-qr works!</p>
+<main class="validacion">
+	<header class="encabezado">
+		<p class="eyebrow">Validación</p>
+		<h1>Escanear QR</h1>
+		<a class="enlace" routerLink="/validacion-qr/manual">Ingresar código a mano</a>
+	</header>
+
+	<div class="visor" [class.oculto]="resultado() || errorValidacion()">
+		<video #video playsinline muted></video>
+		<div class="marco" aria-hidden="true"></div>
+
+		@switch (camara()) {
+			@case ('iniciando') {
+				<p class="estado" role="status">Encendiendo cámara…</p>
+			}
+			@case ('activa') {
+				<p class="estado" role="status">
+					{{ validando() ? 'Validando…' : 'Apuntá la cámara al código QR' }}
+				</p>
+			}
+		}
+	</div>
+
+	@if (errorCamara(); as mensaje) {
+		<div class="aviso error" role="alert">
+			<p>{{ mensaje }}</p>
+			<button class="boton" type="button" (click)="iniciar()">Reintentar</button>
+		</div>
+	}
+
+	@if (resultado(); as r) {
+		<app-resultado-validacion [resultado]="r" />
+		<button class="boton principal" type="button" (click)="escanearOtro()">Escanear otro</button>
+	}
+
+	@if (errorValidacion(); as mensaje) {
+		<div class="aviso error" role="alert">
+			<p class="titulo-error">Error al validar</p>
+			<p>{{ mensaje }}</p>
+		</div>
+		<button class="boton principal" type="button" (click)="escanearOtro()">Escanear otro</button>
+	}
+</main>

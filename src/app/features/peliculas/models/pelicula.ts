@@ -1,5 +1,6 @@
-/** Fila de la tabla `peliculas` (sin el id). */
+/** Fila de la tabla `peliculas`. */
 export interface Pelicula {
+  id: string;
   nombre: string;
   sinopsis: string;
   imagen_path: string | null;
@@ -17,4 +18,10 @@ export interface Pelicula {
 export type PeliculaProxima = Pick<
   Pelicula,
   'nombre' | 'imagen_path' | 'fecha_estreno' | 'dias_preventa'
+>;
+
+/** Datos que necesita la cartelera (home). */
+export type PeliculaCartelera = Pick<
+  Pelicula,
+  'id' | 'nombre' | 'imagen_path' | 'restriccion_edad' | 'fecha_estreno' | 'dias_preventa'
 >;

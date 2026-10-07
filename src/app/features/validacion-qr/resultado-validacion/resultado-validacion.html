@@ -1,0 +1,38 @@
+<section class="resultado" [class.ok]="correcto()" [class.error]="!correcto()" role="status" aria-live="polite">
+	<div class="icono" aria-hidden="true">{{ correcto() ? '✓' : '✕' }}</div>
+
+	<div class="contenido">
+		<h2>{{ titulo() }}</h2>
+
+		@if (mensajeError(); as mensaje) {
+			<p class="mensaje-error">{{ mensaje }}</p>
+		}
+
+		@if (entrada(); as e) {
+			<dl>
+				<div><dt>Película</dt><dd>{{ e.pelicula }}</dd></div>
+				<div><dt>Sala</dt><dd>{{ e.sala }}</dd></div>
+				<div><dt>Función</dt><dd>{{ fechaFuncion() }}</dd></div>
+				<div><dt>Butaca</dt><dd>{{ e.butaca }}</dd></div>
+			</dl>
+		}
+
+		@if (producto(); as p) {
+			<dl>
+				<div><dt>Producto</dt><dd>{{ p.producto ?? '—' }}</dd></div>
+				<div><dt>Cantidad</dt><dd>{{ p.cantidad }}</dd></div>
+			</dl>
+		}
+
+		@if (canje(); as c) {
+			<dl>
+				<div><dt>Canje</dt><dd>{{ c.producto ?? c.recompensa ?? '—' }}</dd></div>
+				<div><dt>Puntos</dt><dd>{{ c.puntos }} pts</dd></div>
+			</dl>
+		}
+
+		@if (fecha(); as f) {
+			<p class="fecha">{{ etiquetaFecha() }} {{ f }}</p>
+		}
+	</div>
+</section>

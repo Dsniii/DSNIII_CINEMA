@@ -91,6 +91,26 @@
         <section class="seat-map" aria-label="Distribución de butacas">
           <div class="seat-map-scroll">
             <div class="seat-map-content">
+              <div class="occupancy">
+                @if (funcionSeleccionada(); as funcion) {
+                  <p class="occupancy-title">
+                    <strong>{{ nombrePelicula(funcion.pelicula_id) }}</strong>
+                    · {{ fechaFuncion(funcion.fecha) }} {{ funcion.hora_inicio.slice(0, 5) }}
+                    <span class="live" [class.on]="conectado()">
+                      {{ conectado() ? 'En vivo' : 'Conectando…' }}
+                    </span>
+                  </p>
+                  <ul class="legend" aria-label="Referencias de ocupación">
+                    <li><span class="dot libre"></span>Libres {{ resumenOcupacion().libres }}</li>
+                    <li><span class="dot reservada"></span>Reservadas {{ resumenOcupacion().reservadas }}</li>
+                    <li><span class="dot vendida"></span>Vendidas {{ resumenOcupacion().vendidas }}</li>
+                  </ul>
+                } @else {
+                  <p class="occupancy-hint">
+                    Elegí una función más abajo para ver la ocupación de butacas en tiempo real.
+                  </p>
+                }
+              </div>
               <div class="screen">Pantalla</div>
               <div class="seat-rows">
                 @for (fila of mapaButacas(); track fila.numero) {
@@ -104,7 +124,9 @@
                           @for (numero of bloque; track numero) {
                             <span
                               class="seat"
-                              [attr.title]="'Fila ' + fila.letra + ', butaca ' + numero"
+                              [class.vendida]="estadoButaca(fila.numero, numero) === 'vendida'"
+                              [class.reservada]="estadoButaca(fila.numero, numero) === 'reservada'"
+                              [attr.title]="tituloButaca(fila.letra, fila.numero, numero)"
                               >{{ numero }}</span
                             >
                           }
@@ -122,6 +144,9 @@
 
         <section class="showtimes" aria-labelledby="showtimes-title">
           <h2 id="showtimes-title">Funciones programadas en esta sala</h2>
+          @if (funcionesSala().length > 0) {
+            <p class="showtimes-hint">Tocá una función para ver su ocupación en el mapa.</p>
+          }
           @if (errorPeliculas(); as error) {
             <p class="schedule-error" role="alert">{{ error }}</p>
           }
@@ -132,19 +157,25 @@
           } @else if (funcionesSala().length > 0) {
             <div class="function-list">
               @for (funcion of funcionesSala(); track funcion.id) {
-                <article class="function-card">
-                  <div>
-                    <h3>{{ nombrePelicula(funcion.pelicula_id) }}</h3>
-                    <p>{{ fechaFuncion(funcion.fecha) }}</p>
-                  </div>
-                  <p class="function-time">
+                <button
+                  class="function-card"
+                  type="button"
+                  [class.selected]="funcion.id === funcionSeleccionadaId()"
+                  [attr.aria-pressed]="funcion.id === funcionSeleccionadaId()"
+                  (click)="seleccionarFuncion(funcion)"
+                >
+                  <span class="function-main">
+                    <span class="function-title">{{ nombrePelicula(funcion.pelicula_id) }}</span>
+                    <span class="function-date">{{ fechaFuncion(funcion.fecha) }}</span>
+                  </span>
+                  <span class="function-time">
                     {{ funcion.hora_inicio.slice(0, 5) }}–{{ funcion.hora_fin.slice(0, 5) }}
-                  </p>
-                  <div class="function-details">
+                  </span>
+                  <span class="function-details">
                     <span>{{ funcion.formato }}</span>
                     <span>{{ funcion.idioma }}</span>
-                  </div>
-                </article>
+                  </span>
+                </button>
               }
             </div>
           } @else {

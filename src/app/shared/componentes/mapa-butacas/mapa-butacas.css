@@ -1,0 +1,140 @@
+:host {
+  --asiento-normal: #3b3e3b;
+  --asiento-vip: #6b5319;
+  --asiento-accesible: #1f4a63;
+  --asiento-elegida: #f5c451;
+  --asiento-ocupada: #232523;
+  --texto-suave: #969995;
+  display: block;
+}
+
+.mapa {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.pantalla {
+  min-width: 560px;
+  margin-inline: auto;
+  padding: 6px 0;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.sala {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 560px;
+  width: min(100%, 760px);
+  margin-inline: auto;
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 8px;
+}
+
+.fila-letra {
+  color: var(--texto-suave);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.asientos {
+  display: grid;
+  gap: 3px;
+}
+
+.asiento,
+.muestra {
+  border: 1px solid transparent;
+  border-radius: 6px 6px 3px 3px;
+  background: var(--asiento-normal);
+}
+
+.asiento {
+  height: 20px;
+  min-width: 0;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    background-color 0.12s ease;
+}
+
+.asiento:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #f2f1ed;
+}
+
+.asiento:focus-visible {
+  outline: 2px solid #f2f1ed;
+  outline-offset: 1px;
+}
+
+[data-tipo='vip'] {
+  background: var(--asiento-vip);
+}
+
+[data-tipo='accesible'] {
+  background: var(--asiento-accesible);
+}
+
+[data-estado='seleccionada'] {
+  border-color: #fff3cf;
+  background: var(--asiento-elegida);
+}
+
+[data-estado='ocupada'] {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--asiento-ocupada),
+    var(--asiento-ocupada) 3px,
+    #2c2e2c 3px,
+    #2c2e2c 6px
+  );
+  opacity: 0.6;
+}
+
+.asiento:disabled {
+  cursor: not-allowed;
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 18px;
+  margin: 0;
+  padding: 0;
+  color: var(--texto-suave);
+  font-size: 12px;
+  list-style: none;
+}
+
+.leyenda li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.muestra {
+  display: inline-block;
+  width: 16px;
+  height: 14px;
+}
+
+.vacio {
+  margin: 0;
+  color: var(--texto-suave);
+  text-align: center;
+}

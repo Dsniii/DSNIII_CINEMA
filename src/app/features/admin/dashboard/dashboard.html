@@ -1,1 +1,91 @@
-<p>dashboard works!</p>
+<section class="tablero">
+  <header class="encabezado">
+    <div>
+      <p class="sobretitulo">Administración</p>
+      <h1>Dashboard</h1>
+      <p class="descripcion">
+        Qué películas vendieron más entradas y qué se vende más en el candy bar. Se cuentan solo las compras
+        confirmadas.
+      </p>
+    </div>
+    <button
+      type="button"
+      class="boton-secundario"
+      [disabled]="cargandoPeliculas() || cargandoProducto()"
+      (click)="cargar()"
+    >
+      {{ cargandoPeliculas() || cargandoProducto() ? 'Actualizando…' : 'Actualizar' }}
+    </button>
+  </header>
+
+  <article class="indicador" aria-labelledby="titulo-producto">
+    <h2 id="titulo-producto">Producto del candy bar más vendido</h2>
+    @if (errorProducto()) {
+      <p class="mensaje-error" role="alert">{{ errorProducto() }}</p>
+    } @else if (cargandoProducto() && !productoMasVendido()) {
+      <p class="detalle" role="status">Cargando…</p>
+    } @else if (productoMasVendido(); as producto) {
+      <p class="valor">{{ producto.nombre }}</p>
+      <p class="detalle">
+        {{ producto.unidades }} {{ producto.unidades === 1 ? 'unidad vendida' : 'unidades vendidas' }}
+      </p>
+    } @else {
+      <p class="detalle">Todavía no hay ventas de productos.</p>
+    }
+  </article>
+
+  @if (errorPeliculas()) {
+    <p class="mensaje-error" role="alert">{{ errorPeliculas() }}</p>
+  }
+
+  <div class="graficos">
+    @for (grafico of graficos(); track grafico.tipo) {
+      <article class="grafico" [attr.aria-labelledby]="'titulo-' + grafico.tipo">
+        <header class="grafico-encabezado">
+          <h2 [id]="'titulo-' + grafico.tipo">{{ grafico.titulo }}</h2>
+          <label class="campo">
+            <span class="solo-lectores">{{ grafico.tipo === 'semana' ? 'Semana' : 'Mes' }}</span>
+            <select
+              #periodoCampo
+              (change)="elegirPeriodo(grafico.tipo, periodoCampo.value)"
+            >
+              @for (periodo of grafico.periodos; track periodo.clave) {
+                <option
+                  [value]="periodo.clave"
+                  [selected]="periodo.clave === grafico.seleccionado.clave"
+                >
+                  {{ periodo.etiqueta }}
+                </option>
+              }
+            </select>
+          </label>
+        </header>
+
+        @if (cargandoPeliculas() && grafico.seleccionado.total === 0) {
+          <p class="vacio" role="status">Cargando…</p>
+        } @else if (grafico.barras.length === 0) {
+          <p class="vacio">No se vendieron entradas en este período.</p>
+        } @else {
+          <ol class="barras">
+            @for (barra of grafico.barras; track barra.nombre) {
+              <li class="barra">
+                <span class="barra-nombre">{{ barra.nombre }}</span>
+                <span class="barra-pista" aria-hidden="true">
+                  <span class="barra-relleno" [style.width.%]="barra.porcentaje"></span>
+                </span>
+                <span class="barra-valor">{{ barra.entradas }}</span>
+              </li>
+            }
+          </ol>
+          <p class="pie">
+            {{ grafico.seleccionado.total }}
+            {{ grafico.seleccionado.total === 1 ? 'entrada' : 'entradas' }} en total
+            @if (grafico.otras > 0) {
+              · {{ grafico.otras }} de otras películas
+            }
+          </p>
+        }
+      </article>
+    }
+  </div>
+</section>

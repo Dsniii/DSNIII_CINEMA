@@ -1,6 +1,6 @@
 import { signal, type WritableSignal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { Autenticacion, type PerfilActual } from '../../../core/services/auth';
 import { BarraNavegacion } from './navbar';
 
@@ -66,5 +66,14 @@ describe('BarraNavegacion', () => {
         '/admin/candy',
       ]),
     );
+  });
+
+  it('al cerrar sesión redirige al login', async () => {
+    const enrutador = TestBed.inject(Router);
+    const navegar = vi.spyOn(enrutador, 'navigateByUrl').mockResolvedValue(true);
+
+    await componente['cerrarSesion']();
+
+    expect(navegar).toHaveBeenCalledWith('/auth/login');
   });
 });

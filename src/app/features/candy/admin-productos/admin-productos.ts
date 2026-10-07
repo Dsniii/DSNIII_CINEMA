@@ -4,6 +4,7 @@ import { CategoriaProducto } from '../models/categoria';
 import { Producto, ProductoInput } from '../models/producto';
 import { Productos } from '../servicios/productos';
 import { Recompensas } from '../../cupones-fidelizacion/servicios/recompensas';
+import { LogActividad } from '../../admin/servicios/log-actividad';
 
 /** Valores editables del formulario de producto. */
 interface FormularioProducto {
@@ -27,6 +28,7 @@ export class AdminProductos implements OnInit {
   constructor(
     private readonly servicioProductos: Productos,
     private readonly servicioRecompensas: Recompensas,
+    private readonly servicioLog: LogActividad,
   ) {}
 
   readonly productos = signal<Producto[]>([]);
@@ -160,11 +162,32 @@ export class AdminProductos implements OnInit {
 
     try {
       const id = this.idEnEdicion();
+      const precioAnterior =
+        id === null ? null : (this.productos().find((elemento) => elemento.id === id)?.precio ?? null);
       const producto = id === null
         ? await this.servicioProductos.crear(datos)
         : await this.servicioProductos.actualizar(id, datos);
 
       await this.servicioRecompensas.guardarParaProducto(producto.id, producto.nombre, costoPuntos);
+
+      await this.servicioLog.registrar({
+        accion: id === null ? 'crear_producto' : 'actualizar_producto',
+        entidad: 'productos',
+        entidadId: producto.id,
+        detalle:
+          id === null
+            ? `Creó el producto "${producto.nombre}" (${this.formatearPrecio(producto.precio)})`
+            : `Actualizó el producto "${producto.nombre}" (${this.formatearPrecio(producto.precio)})`,
+      });
+
+      if (precioAnterior !== null && Number(precioAnterior) !== Number(producto.precio)) {
+        await this.servicioLog.registrar({
+          accion: 'modificar_precio_producto',
+          entidad: 'productos',
+          entidadId: producto.id,
+          detalle: `Modificó el precio del producto "${producto.nombre}": ${this.formatearPrecio(Number(precioAnterior))} → ${this.formatearPrecio(producto.precio)}`,
+        });
+      }
 
       this.productos.update((actuales) =>
         id === null
@@ -201,6 +224,14 @@ export class AdminProductos implements OnInit {
     try {
       await this.servicioRecompensas.eliminarPorProducto(producto.id);
       await this.servicioProductos.eliminar(producto.id);
+
+      await this.servicioLog.registrar({
+        accion: 'eliminar_producto',
+        entidad: 'productos',
+        entidadId: producto.id,
+        detalle: `Eliminó el producto "${producto.nombre}"`,
+      });
+
       this.productos.update((actuales) => actuales.filter((elemento) => elemento.id !== producto.id));
       if (this.idEnEdicion() === producto.id) this.nuevoProducto();
       this.mensaje.set('Producto eliminado.');

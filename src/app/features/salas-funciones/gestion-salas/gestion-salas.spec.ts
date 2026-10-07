@@ -1,9 +1,12 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { GestionSalas } from './gestion-salas';
 import { Salas as ServicioSalas } from '../servicios/salas';
 import { Funciones } from '../servicios/funciones';
 import { Peliculas } from '../../peliculas/servicios/peliculas';
+import { Butacas } from '../servicios/butacas';
+import { ReservasTemporales } from '../../compra/servicios/reservas-temporales';
 
 const servicioSalasSimulado = {
   listarSalas: vi.fn(async () => [
@@ -40,6 +43,52 @@ const servicioPeliculasSimulado = {
   listarNombres: vi.fn(async () => [{ id: 'pelicula-1', nombre: 'Película de prueba' }]),
 };
 
+const servicioButacasSimulado = {
+  listarPorSala: vi.fn(async (salaId: string) => [
+    { id: 'butaca-1', sala_id: salaId, fila: 1, columna: 1, tipo: 'normal' as const },
+    { id: 'butaca-2', sala_id: salaId, fila: 1, columna: 2, tipo: 'normal' as const },
+    { id: 'butaca-3', sala_id: salaId, fila: 1, columna: 3, tipo: 'normal' as const },
+  ]),
+};
+
+const cerrarReservasSimulado = vi.fn();
+const servicioReservasSimulado = {
+  observar: vi.fn(() => ({
+    reservas: signal([
+      // Compra confirmada: sin vencimiento.
+      {
+        id: 'r1',
+        funcion_id: 'funcion-1',
+        butaca_id: 'butaca-1',
+        usuario_id: 'u1',
+        creado_en: '2026-10-07T10:00:00Z',
+        expira_en: '9999-12-31T23:59:59+00:00',
+      },
+      // Reserva temporal vigente.
+      {
+        id: 'r2',
+        funcion_id: 'funcion-1',
+        butaca_id: 'butaca-2',
+        usuario_id: 'u2',
+        creado_en: '2026-10-07T10:00:00Z',
+        expira_en: new Date(Date.now() + 60_000).toISOString(),
+      },
+      // Reserva temporal ya vencida: se ve libre.
+      {
+        id: 'r3',
+        funcion_id: 'funcion-1',
+        butaca_id: 'butaca-3',
+        usuario_id: 'u3',
+        creado_en: '2026-10-07T10:00:00Z',
+        expira_en: new Date(Date.now() - 60_000).toISOString(),
+      },
+    ]),
+    conectado: signal(true),
+    recargar: vi.fn(async () => undefined),
+    cerrar: cerrarReservasSimulado,
+  })),
+};
+
 describe('GestionSalas', () => {
   let componente: GestionSalas;
   let fixture: ComponentFixture<GestionSalas>;
@@ -53,6 +102,8 @@ describe('GestionSalas', () => {
         { provide: ServicioSalas, useValue: servicioSalasSimulado },
         { provide: Funciones, useValue: servicioFuncionesSimulado },
         { provide: Peliculas, useValue: servicioPeliculasSimulado },
+        { provide: Butacas, useValue: servicioButacasSimulado },
+        { provide: ReservasTemporales, useValue: servicioReservasSimulado },
       ],
     }).compileComponents();
 
@@ -145,6 +196,42 @@ describe('GestionSalas', () => {
 
     expect(servicioFuncionesSimulado.listarPorSala).toHaveBeenCalledWith(2);
     expect(componente.funcionesSala()[0].sala_id).toBe('2');
+  });
+
+  it('sin función elegida todas las butacas se ven libres', () => {
+    fixture.detectChanges();
+
+    expect(componente.funcionSeleccionada()).toBeUndefined();
+    expect(fixture.nativeElement.querySelectorAll('.seat.vendida')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('.seat.reservada')).toHaveLength(0);
+  });
+
+  it('al elegir una función muestra las butacas vendidas y reservadas en vivo', async () => {
+    await componente.cargarFuncionesSala(1);
+    componente.seleccionarFuncion(componente.funcionesSala()[0]);
+    fixture.detectChanges();
+
+    expect(servicioReservasSimulado.observar).toHaveBeenCalledWith('funcion-1');
+    expect(fixture.nativeElement.querySelectorAll('.seat.vendida')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelectorAll('.seat.reservada')).toHaveLength(1);
+    expect(componente.resumenOcupacion()).toEqual({
+      vendidas: 1,
+      reservadas: 1,
+      libres: componente.totalButacas() - 2,
+    });
+  });
+
+  it('volver a tocar la función la deselecciona y cierra la conexión en vivo', async () => {
+    await componente.cargarFuncionesSala(1);
+    const funcion = componente.funcionesSala()[0];
+
+    componente.seleccionarFuncion(funcion);
+    componente.seleccionarFuncion(funcion);
+    fixture.detectChanges();
+
+    expect(cerrarReservasSimulado).toHaveBeenCalled();
+    expect(componente.funcionSeleccionada()).toBeUndefined();
+    expect(fixture.nativeElement.querySelectorAll('.seat.vendida')).toHaveLength(0);
   });
 
   it('permite agregar, renombrar y eliminar una sala', async () => {

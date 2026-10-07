@@ -1,1 +1,128 @@
-<p>listado-peliculas works!</p>
+<main class="cartelera">
+	<header class="page-header">
+		<p class="eyebrow">Cine</p>
+		<h1>Cartelera</h1>
+	</header>
+
+	@if (error(); as mensajeError) {
+		<div class="feedback error" role="alert">
+			<p>{{ mensajeError }}</p>
+			<button class="primary-button" type="button" (click)="cargar()">Reintentar</button>
+		</div>
+	} @else if (cargando()) {
+		<p class="list-message" role="status" aria-live="polite">Cargando cartelera…</p>
+	} @else {
+		@if (masVendidas().length > 0) {
+			<section class="top" aria-labelledby="top-title">
+				<div class="section-label-row">
+					<h2 id="top-title" class="section-label">Más vendidas</h2>
+				</div>
+				<div class="top-grid">
+					@for (p of masVendidas(); track p.id; let i = $index) {
+						<ng-container
+							[ngTemplateOutlet]="tarjeta"
+							[ngTemplateOutletContext]="{ $implicit: p, puesto: i + 1 }"
+						/>
+					}
+				</div>
+			</section>
+		}
+
+		<section class="catalog" aria-labelledby="cartelera-title">
+			<div class="section-label-row">
+				<h2 id="cartelera-title" class="section-label">En cartelera</h2>
+				<span class="count">{{ filtradas().length }}</span>
+			</div>
+
+			<div class="filters">
+				<label class="search-field">
+					<span class="search-icon" aria-hidden="true">⌕</span>
+					<span class="visually-hidden">Buscar película</span>
+					<input
+						type="search"
+						placeholder="Buscar película..."
+						[ngModel]="busqueda()"
+						(ngModelChange)="busqueda.set($event)"
+					/>
+				</label>
+
+				@if (generosDisponibles().length > 0) {
+					<div class="genre-filter" role="group" aria-label="Filtrar por género">
+						<button
+							class="genre-chip"
+							type="button"
+							[class.selected]="generoSeleccionado() === null"
+							[attr.aria-pressed]="generoSeleccionado() === null"
+							(click)="elegirGenero(null)"
+						>
+							Todos
+						</button>
+						@for (genero of generosDisponibles(); track genero.id) {
+							<button
+								class="genre-chip"
+								type="button"
+								[class.selected]="generoSeleccionado() === genero.id"
+								[attr.aria-pressed]="generoSeleccionado() === genero.id"
+								(click)="elegirGenero(genero.id)"
+							>
+								{{ genero.nombre }}
+							</button>
+						}
+					</div>
+				}
+			</div>
+
+			<div class="movie-grid">
+				@for (p of filtradas(); track p.id) {
+					<ng-container [ngTemplateOutlet]="tarjeta" [ngTemplateOutletContext]="{ $implicit: p }" />
+				} @empty {
+					<div class="empty-movies">
+						<h3>{{ disponibles().length === 0 ? 'No hay películas disponibles' : 'Sin resultados' }}</h3>
+						<p>
+							{{
+								disponibles().length === 0
+									? 'Volvé pronto para ver la cartelera.'
+									: 'Probá con otro nombre o género.'
+							}}
+						</p>
+					</div>
+				}
+			</div>
+		</section>
+	}
+</main>
+
+<ng-template #tarjeta let-p let-puesto="puesto">
+	<article class="movie-card">
+		<div class="movie-poster">
+			@if (p.imagen) {
+				<img [src]="p.imagen" [alt]="'Póster de ' + p.nombre" loading="lazy" />
+			} @else {
+				<span class="image-placeholder" aria-hidden="true">Sin póster</span>
+			}
+			@if (puesto) {
+				<span class="rank" [attr.aria-label]="'Puesto ' + puesto">{{ puesto }}</span>
+			}
+			@if (p.enPreventa) {
+				<span class="presale-tag">Preventa</span>
+			}
+		</div>
+		<div class="movie-info">
+			<h3>{{ p.nombre }}</h3>
+			<p class="movie-meta">
+				@if (p.generosTexto) {
+					{{ p.generosTexto }}
+				}
+				@if (p.restriccion) {
+					<span class="age-tag">{{ p.restriccion }}</span>
+				}
+			</p>
+			@if (p.enPreventa) {
+				<p class="movie-date"><span>Estreno</span> {{ p.estrenoTexto }}</p>
+			}
+			<button class="primary-button buy-button" type="button" (click)="comprar(p)">
+				Comprar
+			</button>
+		</div>
+	</article>
+</ng-template>

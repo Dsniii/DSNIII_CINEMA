@@ -1,1 +1,145 @@
-<p>seleccion-butacas works!</p>
+<section class="butacas">
+  <header class="encabezado">
+    <p class="sobretitulo">Elegir butacas</p>
+    <h1>{{ nombrePelicula() || 'Selección de butacas' }}</h1>
+  </header>
+
+  @if (error()) {
+    <p class="mensaje mensaje-error" role="alert">{{ error() }}</p>
+  }
+
+  <!-- 1. Funciones de la película -->
+  <section class="recuadro" aria-labelledby="titulo-funciones">
+    <h2 id="titulo-funciones">Funciones</h2>
+
+    @if (cargandoFunciones()) {
+      <p class="vacio">Cargando funciones…</p>
+    } @else if (funcionesVista().length === 0) {
+      <p class="vacio">No hay funciones próximas para esta película.</p>
+    } @else {
+      <ul class="funciones">
+        @for (vista of funcionesVista(); track vista.funcion.id) {
+          <li>
+            <button
+              type="button"
+              class="funcion"
+              [class.funcion-activa]="funcionElegida()?.id === vista.funcion.id"
+              [attr.aria-pressed]="funcionElegida()?.id === vista.funcion.id"
+              (click)="elegirFuncion(vista.funcion)"
+            >
+              <span class="funcion-fecha">{{ vista.fecha }}</span>
+              <span class="funcion-hora">{{ vista.horario }}</span>
+              <span class="funcion-detalle">{{ vista.detalle }}</span>
+              @if (vista.sala) {
+                <span class="funcion-detalle">{{ vista.sala }}</span>
+              }
+              @if (vista.funcion.en_preventa) {
+                <span class="etiqueta">Preventa</span>
+                <span class="funcion-precio">{{ vista.precios.normal | monedaArs }}</span>
+              } @else {
+                <span class="funcion-precio">
+                  Normal {{ vista.precios.normal | monedaArs }} · VIP
+                  {{ vista.precios.vip | monedaArs }}
+                </span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  @if (funcionElegida()) {
+    <div class="compra">
+      <!-- 2. Mapa de butacas -->
+      <section class="recuadro" aria-labelledby="titulo-mapa">
+        <div class="recuadro-cabecera">
+          <h2 id="titulo-mapa">Mapa de butacas</h2>
+          <span class="en-vivo" [class.en-vivo-activo]="conectado()">
+            {{ conectado() ? 'Disponibilidad en vivo' : 'Conectando…' }}
+          </span>
+        </div>
+
+        @if (cargandoMapa()) {
+          <p class="vacio">Cargando mapa…</p>
+        } @else {
+          <app-mapa-butacas
+            [butacas]="butacas()"
+            [ocupadas]="ocupadas()"
+            [seleccionadas]="seleccionadas()"
+            (alternar)="alternarButaca($event)"
+          />
+        }
+      </section>
+
+      <!-- 3. Cantidad de entradas y precio -->
+      <aside class="recuadro entradas" aria-labelledby="titulo-entradas">
+        <h2 id="titulo-entradas">Tus entradas</h2>
+
+        @for (renglon of renglones(); track renglon.categoria) {
+          <div class="entrada">
+            <div class="entrada-info">
+              <p class="entrada-nombre">{{ renglon.nombre }}</p>
+              <p class="entrada-precio">{{ renglon.precio | monedaArs }} c/u</p>
+            </div>
+
+            <div class="contador" role="group" [attr.aria-label]="'Cantidad de entradas ' + renglon.nombre">
+              <button
+                type="button"
+                [disabled]="renglon.cantidad === 0"
+                [attr.aria-label]="'Quitar una entrada ' + renglon.nombre"
+                (click)="cambiarCantidad(renglon.categoria, -1)"
+              >
+                −
+              </button>
+              <output>{{ renglon.cantidad }}</output>
+              <button
+                type="button"
+                [disabled]="totalEntradas() >= maximoEntradas"
+                [attr.aria-label]="'Agregar una entrada ' + renglon.nombre"
+                (click)="cambiarCantidad(renglon.categoria, 1)"
+              >
+                +
+              </button>
+            </div>
+
+            <p class="entrada-subtotal">{{ renglon.subtotal | monedaArs }}</p>
+            <p class="entrada-progreso">Butacas elegidas: {{ renglon.elegidas }} de {{ renglon.cantidad }}</p>
+          </div>
+        }
+
+        @if (nombresElegidas().length > 0) {
+          <p class="elegidas">Butacas: {{ nombresElegidas().join(', ') }}</p>
+        }
+
+        <div class="total" aria-live="polite">
+          <span>Total ({{ totalEntradas() }} {{ totalEntradas() === 1 ? 'entrada' : 'entradas' }})</span>
+          <strong>{{ total() | monedaArs }}</strong>
+        </div>
+
+        @if (aviso()) {
+          <p class="mensaje mensaje-aviso" role="status">{{ aviso() }}</p>
+        }
+
+        @if (usuarioId() === null) {
+          <p class="nota">
+            No iniciaste sesión: podés seguir comprando, pero tus butacas no quedan retenidas.
+            <a routerLink="/auth/login">Iniciá sesión</a> para reservarlas 5 minutos.
+          </p>
+        } @else if (usuarioId()) {
+          <p class="nota">Al continuar, tus butacas quedan reservadas 5 minutos.</p>
+        }
+
+        @if (faltante()) {
+          <p class="nota" role="status">{{ faltante() }}</p>
+        }
+
+        <button type="button" class="siguiente" [disabled]="!puedeAvanzar()" (click)="siguiente()">
+          {{ procesando() ? 'Reservando…' : 'Siguiente' }}
+        </button>
+      </aside>
+    </div>
+  } @else if (!cargandoFunciones() && funcionesVista().length > 0) {
+    <p class="vacio">Elegí una función para ver el mapa de butacas.</p>
+  }
+</section>

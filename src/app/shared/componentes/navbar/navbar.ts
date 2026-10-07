@@ -1,5 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Autenticacion } from '../../../core/services/auth';
 
 /** Barra de navegación con enlaces según el rol del usuario. */
@@ -11,6 +11,7 @@ import { Autenticacion } from '../../../core/services/auth';
 })
 export class BarraNavegacion {
   private readonly autenticacion = inject(Autenticacion);
+  private readonly enrutador = inject(Router);
 
   /** Perfil del usuario logueado (null si es anónimo). */
   protected perfil = this.autenticacion.perfilActual;
@@ -24,8 +25,9 @@ export class BarraNavegacion {
   protected esEmpleado = computed(() => this.rol() === 'empleado');
   protected esAdmin = computed(() => this.rol() === 'admin');
 
-  /** Cierra la sesión del usuario actual. */
+  /** Cierra la sesión del usuario actual y lo lleva al login. */
   async cerrarSesion(): Promise<void> {
     await this.autenticacion.cerrarSesion();
+    await this.enrutador.navigateByUrl('/auth/login');
   }
 }

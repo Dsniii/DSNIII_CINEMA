@@ -9,6 +9,7 @@ import {
 import { AsignadorSala, SalaNoDisponibleError } from '../servicios/asignador-sala';
 import { Funciones } from '../servicios/funciones';
 import { Salas } from '../servicios/salas';
+import { LogActividad } from '../../admin/servicios/log-actividad';
 
 const peliculasSimulado = {
   listar: vi.fn(async () => [
@@ -54,6 +55,10 @@ const asignadorSimulado = {
   })),
 };
 
+const logSimulado = {
+  registrar: vi.fn(async () => undefined),
+};
+
 describe('GestionFunciones', () => {
   let componente: GestionFunciones;
   let fixture: ComponentFixture<GestionFunciones>;
@@ -68,6 +73,7 @@ describe('GestionFunciones', () => {
         { provide: AsignadorSala, useValue: asignadorSimulado },
         { provide: Peliculas, useValue: peliculasSimulado },
         { provide: Salas, useValue: salasSimulado },
+        { provide: LogActividad, useValue: logSimulado },
       ],
     }).compileComponents();
 
@@ -114,6 +120,17 @@ describe('GestionFunciones', () => {
     );
   });
 
+  it('al crear una función, registra la actividad', async () => {
+    componente.formulario.fecha = '2026-10-18';
+    componente.formulario.hora_inicio = '14:00';
+
+    await componente.guardar();
+
+    expect(logSimulado.registrar).toHaveBeenCalledWith(
+      expect.objectContaining({ accion: 'crear_funcion', entidad: 'funciones', entidadId: 'funcion-1' }),
+    );
+  });
+
   it('calcula la apertura de preventa desde la fecha de estreno', () => {
     expect(componente.fechaInicioPreventa()).toBe('2026-10-13');
   });
@@ -156,6 +173,7 @@ describe('GestionFunciones', () => {
     ]);
     expect(componente.funciones()).toHaveLength(2);
     expect(componente.mensaje()).toContain('Se crearon 2 de 2 funciones');
+    expect(logSimulado.registrar).toHaveBeenCalledTimes(2);
   });
 
   it('conserva los éxitos e informa las fechas recurrentes sin sala', async () => {
@@ -177,5 +195,32 @@ describe('GestionFunciones', () => {
     expect(componente.funciones()).toHaveLength(1);
     expect(componente.error()).toContain('2026-10-12');
     expect(componente.error()).toContain('Se crearon 1 de 2 funciones');
+    expect(logSimulado.registrar).toHaveBeenCalledTimes(1);
+  });
+
+  it('al eliminar una función, registra la actividad', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    componente.funciones.set([
+      {
+        id: 'funcion-9',
+        pelicula_id: 'pelicula-1',
+        sala_id: 'sala-1',
+        fecha: '2026-10-20',
+        hora_inicio: '14:00',
+        hora_fin: '15:58',
+        formato: '2D',
+        idioma: 'castellano',
+        precio_base: 3500,
+        precio_vip: 5000,
+        en_preventa: false,
+        precio_preventa: 2900,
+      },
+    ]);
+
+    await componente.eliminar(componente.funciones()[0]);
+
+    expect(logSimulado.registrar).toHaveBeenCalledWith(
+      expect.objectContaining({ accion: 'eliminar_funcion', entidad: 'funciones', entidadId: 'funcion-9' }),
+    );
   });
 });

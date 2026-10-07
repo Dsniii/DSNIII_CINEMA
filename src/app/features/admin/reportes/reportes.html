@@ -1,1 +1,135 @@
-<p>reportes works!</p>
+<section class="reportes">
+  <header class="encabezado">
+    <div>
+      <p class="sobretitulo">Administración</p>
+      <h1>Facturación y ventas diarias</h1>
+      <p class="descripcion">
+        Cuánto se facturó y cuántas entradas se vendieron. Se cuentan solo las compras confirmadas.
+      </p>
+    </div>
+
+    <div class="acciones">
+      <button
+        type="button"
+        class="boton-secundario"
+        [disabled]="!puedeExportar()"
+        (click)="exportar('pdf')"
+      >
+        {{ exportando() === 'pdf' ? 'Generando PDF…' : 'Exportar PDF' }}
+      </button>
+      <button
+        type="button"
+        class="boton-secundario"
+        [disabled]="!puedeExportar()"
+        (click)="exportar('excel')"
+      >
+        {{ exportando() === 'excel' ? 'Generando Excel…' : 'Exportar Excel' }}
+      </button>
+    </div>
+  </header>
+
+  <form class="filtros" aria-label="Período del reporte" (submit)="$event.preventDefault()">
+    <label class="campo">
+      <span>Desde</span>
+      <input
+        #desdeCampo
+        type="date"
+        [value]="desde()"
+        [max]="hasta() || null"
+        (change)="elegirDesde(desdeCampo.value)"
+      />
+    </label>
+
+    <label class="campo">
+      <span>Hasta</span>
+      <input
+        #hastaCampo
+        type="date"
+        [value]="hasta()"
+        [min]="desde() || null"
+        (change)="elegirHasta(hastaCampo.value)"
+      />
+    </label>
+
+    <button type="button" class="boton-enlace" (click)="verHoy()">Hoy</button>
+    <button type="button" class="boton-secundario" [disabled]="cargando()" (click)="generar()">
+      {{ cargando() ? 'Actualizando…' : 'Actualizar' }}
+    </button>
+  </form>
+
+  @if (errorPeriodo()) {
+    <p class="mensaje-aviso" role="status">{{ errorPeriodo() }}</p>
+  }
+
+  @if (error()) {
+    <p class="mensaje-error" role="alert">{{ error() }}</p>
+  }
+
+  @if (cargando() && !reporte()) {
+    <p class="resumen" role="status">Cargando reporte…</p>
+  }
+
+  @if (reporte(); as datos) {
+    <p class="resumen" role="status">
+      {{ esUnSoloDia() ? 'Día ' + diaLegible(datos.desde) : 'Del ' + diaLegible(datos.desde) + ' al ' + diaLegible(datos.hasta) }}
+    </p>
+
+    <div class="indicadores">
+      <article class="indicador indicador-principal">
+        <h2>Facturado</h2>
+        <p class="valor">{{ datos.totales.facturado | monedaArs }}</p>
+        <p class="detalle">Total cobrado, ya sin cupón ni crédito</p>
+      </article>
+      <article class="indicador indicador-principal">
+        <h2>Entradas vendidas</h2>
+        <p class="valor">{{ datos.totales.entradas }}</p>
+        <p class="detalle">En {{ datos.totales.compras }} {{ datos.totales.compras === 1 ? 'compra' : 'compras' }}</p>
+      </article>
+    </div>
+
+    <div class="tabla-contenedor">
+      <table>
+        <caption class="solo-lectores">Facturación y entradas vendidas por día</caption>
+        <thead>
+          <tr>
+            <th scope="col">Fecha</th>
+            <th scope="col" class="numero">Compras</th>
+            <th scope="col" class="numero">Entradas vendidas</th>
+            <th scope="col" class="numero">Subtotal</th>
+            <th scope="col" class="numero">Descuentos</th>
+            <th scope="col" class="numero">Crédito utilizado</th>
+            <th scope="col" class="numero">Facturado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (dia of datos.dias; track dia.fecha) {
+            <tr [class.sin-ventas]="dia.compras === 0">
+              <td class="celda-fecha">{{ diaLegible(dia.fecha) }}</td>
+              <td class="numero">{{ dia.compras }}</td>
+              <td class="numero">{{ dia.entradas }}</td>
+              <td class="numero">{{ dia.subtotal | monedaArs }}</td>
+              <td class="numero">{{ dia.descuentos | monedaArs }}</td>
+              <td class="numero">{{ dia.credito | monedaArs }}</td>
+              <td class="numero">{{ dia.facturado | monedaArs }}</td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">Total</th>
+            <td class="numero">{{ datos.totales.compras }}</td>
+            <td class="numero">{{ datos.totales.entradas }}</td>
+            <td class="numero">{{ datos.totales.subtotal | monedaArs }}</td>
+            <td class="numero">{{ datos.totales.descuentos | monedaArs }}</td>
+            <td class="numero">{{ datos.totales.credito | monedaArs }}</td>
+            <td class="numero">{{ datos.totales.facturado | monedaArs }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    @if (datos.totales.compras === 0) {
+      <p class="vacio">No hubo compras confirmadas en este período.</p>
+    }
+  }
+</section>

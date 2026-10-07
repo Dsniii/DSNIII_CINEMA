@@ -4,6 +4,7 @@ import { Producto, ProductoInput } from '../models/producto';
 import { Productos } from '../servicios/productos';
 import { Recompensa } from '../../cupones-fidelizacion/models/recompensa';
 import { Recompensas } from '../../cupones-fidelizacion/servicios/recompensas';
+import { LogActividad } from '../../admin/servicios/log-actividad';
 import { AdminProductos } from './admin-productos';
 
 describe('AdminProductos', () => {
@@ -26,6 +27,7 @@ describe('AdminProductos', () => {
     eliminarPorProducto: ReturnType<typeof vi.fn>;
     actualizarCostoEntrada: ReturnType<typeof vi.fn>;
   };
+  let servicioLog: { registrar: ReturnType<typeof vi.fn> };
 
   const categoria: CategoriaProducto = { id: 'category-1', nombre: 'Pochoclos' };
   const producto: Producto = {
@@ -64,11 +66,16 @@ describe('AdminProductos', () => {
       actualizarCostoEntrada: vi.fn().mockResolvedValue({ ...entradaGratis, costo_puntos: 650 }),
     };
 
+    servicioLog = {
+      registrar: vi.fn().mockResolvedValue(undefined),
+    };
+
     await TestBed.configureTestingModule({
       imports: [AdminProductos],
       providers: [
         { provide: Productos, useValue: servicioProductos },
         { provide: Recompensas, useValue: servicioRecompensas },
+        { provide: LogActividad, useValue: servicioLog },
       ],
     }).compileComponents();
 
@@ -111,6 +118,23 @@ describe('AdminProductos', () => {
     expect(componente.productos()).toContain(producto);
   });
 
+  it('al crear un producto, registra la actividad', async () => {
+    Object.assign(componente.formulario, {
+      nombre: 'Pochoclo mediano',
+      categoria_id: categoria.id,
+      precio: 2300,
+      imagen_path: '',
+      activo: true,
+      costo_puntos: null,
+    });
+
+    await componente.guardar();
+
+    expect(servicioLog.registrar).toHaveBeenCalledWith(
+      expect.objectContaining({ accion: 'crear_producto', entidad: 'productos', entidadId: producto.id }),
+    );
+  });
+
   it('al guardar un producto con puntos, crea o actualiza su recompensa', async () => {
     Object.assign(componente.formulario, {
       nombre: 'Pochoclo mediano',
@@ -145,11 +169,43 @@ describe('AdminProductos', () => {
     expect(componente.formulario.costo_puntos).toBe(150);
   });
 
-  it('al eliminar un producto, borra antes su recompensa para no chocar con la FK', async () => {
+  it('al cambiar el precio de un producto, registra el valor anterior y el nuevo', async () => {
+    await componente.cargarDatos();
+    await componente.editar(producto);
+    componente.formulario.precio = 2100;
+    servicioProductos.actualizar.mockResolvedValueOnce({ ...producto, precio: 2100 });
+
+    await componente.guardar();
+
+    expect(servicioLog.registrar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        accion: 'modificar_precio_producto',
+        entidad: 'productos',
+        entidadId: producto.id,
+        detalle: expect.stringContaining('Pochoclo chico'),
+      }),
+    );
+  });
+
+  it('si el precio no cambia, no registra un cambio de precio', async () => {
+    await componente.cargarDatos();
+    await componente.editar(producto);
+
+    await componente.guardar();
+
+    const acciones = servicioLog.registrar.mock.calls.map(([evento]) => evento.accion);
+    expect(acciones).toContain('actualizar_producto');
+    expect(acciones).not.toContain('modificar_precio_producto');
+  });
+
+  it('al eliminar un producto, borra antes su recompensa y registra la actividad', async () => {
     await componente.eliminarProducto(producto);
 
     expect(servicioRecompensas.eliminarPorProducto).toHaveBeenCalledWith(producto.id);
     expect(servicioProductos.eliminar).toHaveBeenCalledWith(producto.id);
+    expect(servicioLog.registrar).toHaveBeenCalledWith(
+      expect.objectContaining({ accion: 'eliminar_producto', entidad: 'productos', entidadId: producto.id }),
+    );
   });
 
   it('guarda el nuevo costo en puntos de la entrada gratis', async () => {

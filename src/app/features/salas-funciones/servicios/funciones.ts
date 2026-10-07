@@ -42,6 +42,28 @@ export class Funciones {
     return (data ?? []) as Funcion[];
   }
 
+  /** Lista las funciones de una película ordenadas por fecha y hora, opcionalmente desde una fecha (`YYYY-MM-DD`). */
+  async listarPorPelicula(peliculaId: string, desdeFecha?: string): Promise<Funcion[]> {
+    let consulta = this.clienteSupabase.cliente
+      .from('funciones')
+      .select(CAMPOS_FUNCION)
+      .eq('pelicula_id', peliculaId);
+
+    if (desdeFecha) {
+      consulta = consulta.gte('fecha', desdeFecha);
+    }
+
+    const { data, error } = await consulta
+      .order('fecha', { ascending: true })
+      .order('hora_inicio', { ascending: true });
+
+    if (error) {
+      throw new Error(`No se pudieron cargar las funciones de la película: ${error.message}`);
+    }
+
+    return (data ?? []) as Funcion[];
+  }
+
   /** Elimina una función por id. */
   async eliminar(id: string): Promise<void> {
     const { error } = await this.clienteSupabase.cliente.from('funciones').delete().eq('id', id);
