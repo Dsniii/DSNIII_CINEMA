@@ -1,48 +1,19 @@
-import {
-  AngularNodeAppEngine,
-  createNodeRequestHandler,
-  isMainModule,
-  writeResponseToNodeResponse,
-} from '@angular/ssr/node';
-import express from 'express';
-import { join } from 'node:path';
+import { AngularAppEngine, createRequestHandler } from '@angular/ssr'
+import { getAllowedHosts, getContext, getTrustProxyHeaders } from '@netlify/angular-runtime/app-engine.js'
 
-const browserDistFolder = join(import.meta.dirname, '../browser');
+const angularAppEngine = new AngularAppEngine({
+  allowedHosts: getAllowedHosts(),
+  trustProxyHeaders: getTrustProxyHeaders(),
+})
 
-/** Servidor Express que sirve estáticos y renderiza la app Angular. */
-const app = express();
-const angularApp = new AngularNodeAppEngine();
+export async function netlifyAppEngineHandler(request: Request): Promise<Response> {
+  const context = getContext()
 
-/** Sirve los archivos estáticos desde /browser. */
-app.use(
-  express.static(browserDistFolder, {
-    maxAge: '1y',
-    index: false,
-    redirect: false,
-  }),
-);
-
-/** Renderiza la aplicación Angular para el resto de las solicitudes. */
-app.use((solicitud, respuestaHttp, siguiente) => {
-  angularApp
-    .handle(solicitud)
-    .then((respuesta) =>
-      respuesta ? writeResponseToNodeResponse(respuesta, respuestaHttp) : siguiente(),
-    )
-    .catch(siguiente);
-});
-
-/** Inicia el servidor si es el módulo principal o corre bajo PM2; usa PORT o 4000. */
-if (isMainModule(import.meta.url) || process.env['pm_id']) {
-  const port = process.env['PORT'] || 4000;
-  app.listen(port, (error) => {
-    if (error) {
-      throw error;
-    }
-
-    console.log(`Node Express server listening on http://localhost:${port}`);
-  });
+  const result = await angularAppEngine.handle(request, context)
+  return result || new Response('Not found', { status: 404 })
 }
 
-/** Manejador de solicitudes usado por Angular CLI (dev-server y build) o Cloud Functions. */
-export const reqHandler = createNodeRequestHandler(app);
+/**
+ * The request handler used by the Angular CLI (dev-server and during build).
+ */
+export const reqHandler = createRequestHandler(netlifyAppEngineHandler)
